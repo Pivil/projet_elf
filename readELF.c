@@ -10,8 +10,9 @@
 
 Elf32_Ehdr readELFHeader(FILE *f) {
     Elf32_Ehdr hd;
-    for(int i=0;i<16;i++)
-        fscanf(f,"%c",&(hd.e_ident[i]));
+    for(int i=0;i<16;i++) {
+        hd.e_ident[i]=get1Byte(f);
+    }
     hd.e_type = get2Bytes(f);
     hd.e_machine = get2Bytes(f);
     hd.e_version = get4Bytes(f);
@@ -83,7 +84,7 @@ void printELFHeader(Elf32_Ehdr hd) {
 
 
 char * getSectionName(Elf32_Shdr_seq sh,int index, Elf32_Ehdr hd,FILE *f) {
-    char *  str; int i=0;
+    char *  str;
     str = malloc(100);
     if (str==NULL) {
         exit(1);
@@ -92,9 +93,9 @@ char * getSectionName(Elf32_Shdr_seq sh,int index, Elf32_Ehdr hd,FILE *f) {
     if (sh.tab[index].sh_name==0)
         return str;
     fseek(f,sh.tab[index].sh_name + sh.tab[hd.e_shstrndx].sh_offset,SEEK_SET);//Go the beginning of the string
-    unsigned char c=1;
+    unsigned char c=1; int i=0;
     while(c!='\0') {
-        fscanf(f,"%c",&c);
+        c=get1Byte(f);
         str[i]=c;
         i++;
     }
@@ -263,7 +264,7 @@ char_array readSectionByName(FILE* f, Elf32_Shdr_seq arraySection, char * name, 
 
         fseek(f,arraySection.tab[found].sh_offset,SEEK_SET); //Go to the beginning of the section
         for(unsigned int i=0;i<arraySection.tab[found].sh_size;i++) { //Read the section
-            fscanf(f,"%c",&(h.tab[i]));
+            h.tab[i] = get1Byte(f);
         }
         return h;
     }
@@ -279,7 +280,7 @@ char_array readSectionByIndex(FILE* f, Elf32_Shdr_seq arraySection, int index) {
 
     fseek(f,arraySection.tab[index].sh_offset,SEEK_SET); //Go to the beginning of the section
     for(unsigned int i=0;i<arraySection.tab[index].sh_size;i++) { //Read the section
-        fscanf(f,"%c",&(h.tab[i]));
+        h.tab[i] = get1Byte(f);
     }
     return h;
 }
@@ -299,9 +300,9 @@ char * getSymbolName(Elf32_Sym sym, Elf32_Shdr_seq seqSection, FILE *f) {
 
     //TODO On récupère directement la valeur (il vaut mieux parcourir)
     fseek(f,sym.st_name + seqSection.tab[seqSection.n-1].sh_offset,SEEK_SET);//Go the beginning of the string
-    unsigned char c=1; int i=0;
+    int i=0; unsigned char c=1;
     while(c!='\0') {
-        fscanf(f,"%c",&c);
+        c=get1Byte(f);
         str[i]=c;
         i++;
     }
@@ -329,8 +330,8 @@ Elf32_Sym_seq readSymbolTable(FILE* f, Elf32_Shdr_seq arraySection) {
         seqSym.tab[iSym].st_name = get4Bytes(f);
         seqSym.tab[iSym].st_value = get4Bytes(f);
         seqSym.tab[iSym].st_size = get4Bytes(f);
-        fscanf(f,"%c",&(seqSym.tab[iSym].st_info));
-        fscanf(f,"%c",&(seqSym.tab[iSym].st_other));
+        seqSym.tab[iSym].st_info = get1Byte(f);
+        seqSym.tab[iSym].st_other = get1Byte(f);
         seqSym.tab[iSym].st_shndx = get2Bytes(f);
         iSym++;
     }
