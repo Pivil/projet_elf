@@ -52,7 +52,7 @@ int main(int argc,char * argv[]) {
         else if(!strcmp(argv[1],"-s") || !strcmp(argv[1],"--symbolTable")) { //Print the symbol table
             Elf32_Ehdr hd = readELFHeader(f);
             Elf32_Shdr_seq shd = readSectionHeader(f,hd);
-            Elf32_Sym_seq symTab = readSymbolTable(f,shd);
+            Elf32_Sym_seq symTab = readSymbolTable(f,shd,hd);
             printSymbolTable(symTab,shd,f);
             free(shd.tab); free(symTab.tab);
             fclose(f);
@@ -61,7 +61,7 @@ int main(int argc,char * argv[]) {
         else if(!strcmp(argv[1],"-r") || !strcmp(argv[1],"--relocationTable")) { //Print the relocation table
             Elf32_Ehdr hd = readELFHeader(f);
             Elf32_Shdr_seq shd = readSectionHeader(f,hd);
-            Elf32_Sym_seq symTab = readSymbolTable(f,shd);
+            Elf32_Sym_seq symTab = readSymbolTable(f,shd,hd);
             Elf32_Rel_seq seqRel = readRelocationTable(f,shd,hd);
 
             printRelocationTable(seqRel,shd,symTab,hd,f);

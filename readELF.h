@@ -97,7 +97,7 @@ arraySection : contains all the section of the file
 Result: the table of symbol
 The program allocates memory for the array
 */
-Elf32_Sym_seq readSymbolTable(FILE* f, Elf32_Shdr_seq arraySection);
+Elf32_Sym_seq readSymbolTable(FILE* f, Elf32_Shdr_seq arraySection,Elf32_Ehdr hd) ;
 
 /*
 Entries: the symbol table, the section header, the file
