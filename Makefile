@@ -20,6 +20,15 @@ byteManipulation.o : byteManipulation.c byteManipulation.c
 
 
 
+relocTest: relocTest.o relocation.o readELF.o byteManipulation.o
+	$(CC) -g $^ -o $@
+
+relocTest.o: relocTest.c relocation.h
+	$(CC) -g -c $<
+
+relocation.o: relocation.c relocation.h readELF.h
+	$(CC) -g -c $<
+
 
 
 
