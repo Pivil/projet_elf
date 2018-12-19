@@ -429,11 +429,11 @@ Elf32_Rel_seq readRelocationTable(FILE* f, Elf32_Shdr_seq arraySection, Elf32_Eh
     return seqRel;
 }
 
-void printRelocationTable(Elf32_Rel_seq relT, Elf32_Shdr_seq arraySection, Elf32_Sym_seq symSeq,FILE *f) {
+void printRelocationTable(Elf32_Rel_seq relT, Elf32_Shdr_seq arraySection, Elf32_Sym_seq symSeq,Elf32_Ehdr hd,FILE *f) {
 
     for(int i=0;i<relT.n;i++) {// For each table of relocation
         printf("Relocation section %s at offset 0x%x: \n",relT.tab[i].name,relT.tab[i].offset);
-        printf("  Offset     Info    Type       NumSymbol Sym.Value Sym.Name \n");
+        printf("  Offset     Info    Type       NumSymbol Sym.Value Sym.Name     Section.Name\n");
 
         for(int k=0;k<relT.tab[i].n;k++) {// For each value of the table
             printf("%8.8x ",relT.tab[i].tabRelocation[k].r_offset);
@@ -462,18 +462,13 @@ void printRelocationTable(Elf32_Rel_seq relT, Elf32_Shdr_seq arraySection, Elf32
                 printf("%12.12s ","UNKNWON");
                 break;
             }
-            printf("   %8.8x",ELF32_R_SYM(relT.tab[i].tabRelocation[k].r_info));
-
-            printf("%8.8s",symSeq.tab[  ] ); //The symbol Value
-            
-
+            unsigned int numSym = ELF32_R_SYM(relT.tab[i].tabRelocation[k].r_info);
+            printf(" %8.8x  ",numSym);//The num of the symbol
+            printf("%8.8x",symSeq.tab[numSym].st_value); //The symbol Value
+            printf("%16.16s",getSymbolName(symSeq.tab[numSym],arraySection ,f)); //The symbol name
+            printf("%s",getSectionName(arraySection,symSeq.tab[numSym].st_shndx,hd,f)); //The section concerned name
             printf("\n");
         }
         printf("\n");
-
     }
-
-
-
-
 }

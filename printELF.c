@@ -6,7 +6,8 @@
 
 
 void printHelp() {
-    printf("Options: \n\
+    printf("The programs reads a ELF file and print the information asked. You can't use multiple options! \n\
+    Options: \n\
     Print the ELF header: -h nameFile \n\
     Print the Section header: -S nameFile \n\
     Print a section by name : -x nameSection nameFile \n\
@@ -29,15 +30,18 @@ int isNumber(char * str) {
 int main(int argc,char * argv[]) {
 
     if (argc==3) {
+        FILE * f = fopen(argv[2],"r");
+        if(f==NULL) {
+            printf("ERROR: failed to open the file\n");
+            exit(1);
+        }
         if(!strcmp(argv[1],"-h") || !strcmp(argv[1],"--headerELF")) { //Print the ELF header
-            FILE * f = fopen(argv[2],"r");
             Elf32_Ehdr hd = readELFHeader(f);
             printELFHeader(hd);
             fclose(f);
         }
 
         else if(!strcmp(argv[1],"-S") || !strcmp(argv[1],"--headerSection")) { //Print the Section header
-            FILE * f = fopen(argv[2],"r");
             Elf32_Ehdr hd = readELFHeader(f);
             Elf32_Shdr_seq shd = readSectionHeader(f,hd);
             printSectionHeader(shd,hd,f);
@@ -46,7 +50,6 @@ int main(int argc,char * argv[]) {
         }
 
         else if(!strcmp(argv[1],"-s") || !strcmp(argv[1],"--symbolTable")) { //Print the symbol table
-            FILE * f = fopen(argv[2],"r");
             Elf32_Ehdr hd = readELFHeader(f);
             Elf32_Shdr_seq shd = readSectionHeader(f,hd);
             Elf32_Sym_seq symTab = readSymbolTable(f,shd);
@@ -55,15 +58,13 @@ int main(int argc,char * argv[]) {
             fclose(f);
         }
 
-        /*TODO finish*/
         else if(!strcmp(argv[1],"-r") || !strcmp(argv[1],"--relocationTable")) { //Print the relocation table
-            FILE * f = fopen(argv[2],"r");
             Elf32_Ehdr hd = readELFHeader(f);
             Elf32_Shdr_seq shd = readSectionHeader(f,hd);
             Elf32_Sym_seq symTab = readSymbolTable(f,shd);
-            Elf32_Rel_seq seqRel = readRelocationTable(f,shd,symTab,hd);
+            Elf32_Rel_seq seqRel = readRelocationTable(f,shd,hd);
 
-            printRelocationTable(seqRel,shd,f);
+            printRelocationTable(seqRel,shd,symTab,hd,f);
             free(shd.tab);free(symTab.tab); //TODO free
             fclose(f);
         }
@@ -71,9 +72,13 @@ int main(int argc,char * argv[]) {
     }
     else if (argc==4) {
         char_array h;
+        FILE * f = fopen(argv[3],"r");
+        if(f==NULL) {
+            printf("ERROR: failed to open the file\n");
+            exit(1);
+        }
         if(!strcmp(argv[1],"-x") || !strcmp(argv[1],"--section")) {
             if(isNumber(argv[2])) { //Select the section by index
-                FILE* f = fopen(argv[3],"r");
                 Elf32_Ehdr hd = readELFHeader(f);
                 Elf32_Shdr_seq shd = readSectionHeader(f,hd);
 
@@ -95,7 +100,6 @@ int main(int argc,char * argv[]) {
                 fclose(f);
             }
             else { //Select the section by name
-                FILE* f = fopen(argv[3],"r");
                 Elf32_Ehdr hd = readELFHeader(f);
                 Elf32_Shdr_seq shd = readSectionHeader(f,hd);
 
@@ -124,9 +128,5 @@ int main(int argc,char * argv[]) {
     else { //Bad values
         printHelp();
     }
-
-    return 1;
-
-
     return 0;
 }
