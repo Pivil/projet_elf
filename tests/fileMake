@@ -1,0 +1,33 @@
+CC=arm-eabi-gcc
+AS=arm-eabi-as
+LD=arm-eabi-ld
+OPT=-mno-thumb-interwork -S
+
+all: file_exe.o
+
+file_1.s: file_1.c file_1.h
+	$(CC) $(OPT) $<
+
+file.s: file.c file_1.h
+	$(CC) $(OPT) $<
+
+file_1.o: file_1.s
+	$(AS) -o $@ $^
+
+file.o: file.s
+	$(AS) -o $@ $^
+
+file_exe.o: file_1.o file.o
+	$(LD) -r -o $@ $^
+
+
+
+
+file_1.o: file_1.c file_1.h
+	$(CC) -c $<
+
+file.o: file.c file_1.h
+	$(CC) -c $^
+
+file: file.o file_1.o
+	$(CC) $^ -o $@
