@@ -10,6 +10,7 @@
 
 Elf32_Ehdr readELFHeader(FILE *f) {
     Elf32_Ehdr hd;
+	fseek(f,0,SEEK_SET);
     for(int i=0;i<16;i++) {
         hd.e_ident[i]=get1Byte(f);
     }
