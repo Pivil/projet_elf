@@ -11,15 +11,15 @@ Result: a byte read
 uint8_t get1Byte(FILE *f);
 
 /*
-Entrie: the file to read
+Entrie: the file to read the endianess 1= little endian, 2 big endian
 Result: 2 bytes read
 */
-uint16_t get2Bytes(FILE *f,char c);
+uint16_t get2Bytes(FILE *f,char endian);
 /*
-Entrie: the file to read
+Entrie: the file to read, the endianess 1= little endian, 2 big endian
 Result: 4 bytes read
 */
-uint32_t get4Bytes(FILE *f,char c);
+uint32_t get4Bytes(FILE *f,char endian);
 
 /*
 Entrie: the file, the byte to write
@@ -30,10 +30,10 @@ void print1Byte(FILE *f,uint8_t x);
 Entrie: the file, the 2bytes to write,  the endianess 1= little endian, 2 big endian
 Result: the 2bytes x written in the file
 */
-void print2Bytes(FILE *f,uint16_t x);
+void print2Bytes(FILE *f,uint16_t x,char endian);
 /*
 Entrie: the file, the 4bytes to write,  the endianess 1= little endian, 2 big endian
 Result: the 4bytes x written in the file
 */
-void print4Bytes(FILE *f,uint32_t x);
+void print4Bytes(FILE *f,uint32_t x,char endian);
 #endif
