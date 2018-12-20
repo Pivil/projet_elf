@@ -10,7 +10,6 @@ void secReorder(FILE* input,Elf32_Shdr_seq* shd_o,Elf32_Ehdr* hd_o,int* oldIds )
 
 	uint32_t* rel_off;
 	uint32_t* rel_sumSize;
-
 	j=0;k=0;
 	shd_o->n = j;
 	shd_o->tab = malloc(hd_o->e_shnum*sizeof(Elf32_Shdr));
@@ -18,7 +17,6 @@ void secReorder(FILE* input,Elf32_Shdr_seq* shd_o,Elf32_Ehdr* hd_o,int* oldIds )
 
 		if(shd.tab[i].sh_type != SHT_RELA && shd.tab[i].sh_type != SHT_REL){
 			shd_o->tab[j] = shd.tab[i];
-			oldIds = realloc(oldIds,(j+1)*sizeof(int));
 			oldIds[j] = i;
 			j++;
 		} 
@@ -82,6 +80,7 @@ void secReorder(FILE* input,Elf32_Shdr_seq* shd_o,Elf32_Ehdr* hd_o,int* oldIds )
 
 	shd_o->n = j-1;
 	shd_o->tab = realloc(shd_o->tab,j*sizeof(Elf32_Shdr));
+	oldIds = realloc(oldIds,j*sizeof(int));
 	for(z = 0; z < j; z++){
 		i = 0;
 		while(rel_off[i] < shd_o->tab[z].sh_offset && i < k){
