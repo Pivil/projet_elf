@@ -330,58 +330,60 @@ Elf32_Sym_seq readSymbolTable(FILE* f, Elf32_Shdr_seq arraySection,Elf32_Ehdr hd
 
 void printSymbolTable(Elf32_Sym_seq seqSym, Elf32_Shdr_seq arraySection,FILE *f) {
     printf("Num:    Value  Size Type    Bind   Vis      Ndx Name\n");
-    for(int iSym=0;iSym<seqSym.n;iSym++) {
+    printf("  0: 00000000     0 NOTYPE  LOCAL  DEFAULT  UND \n");
+    for(int iSym=1;iSym<seqSym.n;iSym++) {
         printf("%3d: ", iSym);
-        printf("%8.8x ", seqSym.tab[iSym].st_value);
+        printf("%8.8x  ", seqSym.tab[iSym].st_value);
         printf("%4d ", seqSym.tab[iSym].st_size);
 
         switch (ELF32_ST_TYPE(seqSym.tab[iSym].st_info)) {
             case STT_NOTYPE:
-            printf("%7.7s ","NOTYPE");
+            printf("NOTYPE  ");
             break;
             case STT_OBJECT:
-            printf("%7.7s ","OBJECT");
+            printf("OBJECT  ");
             break;
             case STT_FUNC:
-            printf("%7.7s ","FUNC");
+            printf("FUNC    ");
             break;
             case STT_SECTION:
-            printf("%7.7s ","SECTION");
+            printf("SECTION ");
             break;
             case STT_FILE:
-            printf("%7.7s ","WEFILEAK");
+            printf("FILE    ");
             break;
             case STT_COMMON:
-            printf("%7.7s ","COMMON");
+            printf("COMMON  ");
             break;
             case STT_TLS:
-            printf("%7.7s ","TLS");
+            printf("TLS     ");
             break;
             default:
-            printf("%7.7s ","UNKNOWN");
+            printf("UNKNOWN");
             break;
         }
 
         switch (ELF32_ST_BIND(seqSym.tab[iSym].st_info)) {
             case STB_LOCAL:
-            printf("%6.6s ","LOCAL");
+            printf("LOCAL  ");
             break;
             case STB_GLOBAL:
-            printf("%6.6s ","LOCAL");
+            printf("GLOBAL ");
             break;
             case STB_WEAK:
-            printf("%6.6s ","WEAK");
+            printf("WEAK    ");
             break;
             default:
-            printf("%6.6s ","UNKNOWN");
+            printf("UNKNOWN");
             break;
         }
-        if(iSym==0)
-            printf("UND     ");
+        printf("DEFAULT  ");
+
+        if(seqSym.tab[iSym].st_shndx==SHN_ABS)
+            printf("ABS ");
         else
-            printf("DEFAULT ");
-        printf("%3d   ",seqSym.tab[iSym].st_shndx);
-        printf("%4.15s ",getSymbolName(seqSym.tab[iSym],arraySection,f));
+            printf("%3d ",seqSym.tab[iSym].st_shndx);
+        printf("%s ",getSymbolName(seqSym.tab[iSym],arraySection,f));
         printf("\n");
     }
 }
