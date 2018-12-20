@@ -37,20 +37,21 @@ void printELFHeader(Elf32_Ehdr hd) {
     for(int i=0;i<16;i++)
         printf("%s%x ",hd.e_ident[i]<=9?"0":"",hd.e_ident[i]);
     printf("\n");
-    printf("Class: %s\n", hd.e_ident[EI_CLASS]==1 ? "32" : "64");
+    printf("Class: ELF%s\n", hd.e_ident[EI_CLASS]==1 ? "32" : "64");
     printf("Data: %s\n", hd.e_ident[EI_DATA]==1 ? "little endian" : "big endian");
-    printf("Data: %d\n", hd.e_ident[EI_VERSION]);
-    printf("OS/ABI: %x (%s) \n", hd.e_ident[EI_OSABI], hd.e_ident[EI_OSABI]==0x61 ? "ARM":"Other");
+    printf("Version: %d\n", hd.e_ident[EI_VERSION]);
+    printf("OS/ABI: %s\n", hd.e_ident[EI_OSABI]==0x61 ? "ARM":"Other");
+    printf("Abi version: %d\n", hd.e_ident[EI_PAD]);
     printf("Type: ");
     switch (hd.e_type) {
         case 0:
             printf("NONE\n");
             break;
         case 1:
-            printf("REL\n");
+            printf("REL (Relocatable file)\n");
             break;
         case 2:
-            printf("EXEC\n");
+            printf("EXEC (Executable file)\n");
             break;
         default:
             printf("Other\n");
@@ -61,15 +62,15 @@ void printELFHeader(Elf32_Ehdr hd) {
             printf("ARM\n");
             break;
         case 0x3e:
-            printf("X86-64\n");
+            printf("Advanced Micro Devices X86-64\n");
             break;
         default:
             printf("Other\n");
     }
-    printf("Version: %d\n",hd.e_version);
-    printf("Version: 0x%x\n",hd.e_entry);
-    printf("Start of program headers: %d\n",hd.e_phoff);
-    printf("Start of section headers: %d\n",hd.e_shoff);
+    printf("Version: 0x%x\n",hd.e_version);
+    printf("Entry point adress: 0x%x\n",hd.e_entry);
+    printf("Start of program headers: %d (bytes into file)\n",hd.e_phoff);
+    printf("Start of section headers: %d (bytes into file)\n",hd.e_shoff);
     printf("Flags: 0x%x\n",hd.e_flags);
     printf("Size of this header: %d (bytes)\n",hd.e_ehsize);
     printf("Size of program headers: %d (bytes)\n",hd.e_phentsize);
@@ -128,14 +129,11 @@ Elf32_Shdr_seq readSectionHeader(FILE *f, Elf32_Ehdr hd) {
 
 void printSectionHeader(Elf32_Shdr_seq seqHd,Elf32_Ehdr hd,FILE *f) {
     char * str;
-    printf("[Nr] Name                 Type            Addr     Off    Size   ES Flg Lk Inf Al\n");
+    printf("[Nr] Name              Type            Addr     Off    Size   ES Flg Lk Inf Al\n");
     for(int i=0;i<seqHd.n;i++) {
         printf("[%2d] ",i);
         str = getSectionName(seqHd,i,hd,f);
-        printf("%s ",str);
-        for(int k = strlen(str);k<20 ;k++) { //For the alginement of column
-            printf(" ");
-        }
+        printf("%-17.17s ",str);
 
         char *strType;
         switch (seqHd.tab[i].sh_type) {
@@ -196,10 +194,7 @@ void printSectionHeader(Elf32_Shdr_seq seqHd,Elf32_Ehdr hd,FILE *f) {
             default:
                 strType="UNKNOWN";
         }
-        printf("%s",strType);
-        for(int k = strlen(strType);k<16 ;k++) { //For the alginement of column
-            printf(" ");
-        }
+        printf("%-16.16s",strType);
 
         printf("%8.8x ",seqHd.tab[i].sh_addr);
         printf("%6.6x ",seqHd.tab[i].sh_offset);
@@ -207,31 +202,26 @@ void printSectionHeader(Elf32_Shdr_seq seqHd,Elf32_Ehdr hd,FILE *f) {
         printf("%2.2x ",seqHd.tab[i].sh_entsize);
 
         int a = 0; char strFlag[5]; unsigned int testFlag=seqHd.tab[i].sh_flags;
-        if(testFlag>=SHF_MASKPROC) {
-            testFlag -= SHF_MASKPROC;
+
+        if((testFlag&SHF_MASKPROC)==SHF_MASKPROC) {
             strFlag[0]='M';
             a++;
         }
-        if(testFlag>=SHF_EXECINSTR) {
-            testFlag -= SHF_EXECINSTR;
-            strFlag[a]='X';
-            a++;
-        }
-        if(testFlag>=SHF_ALLOC) {
-            testFlag -= SHF_ALLOC;
-            strFlag[a]='A';
-            a++;
-        }
-        if(testFlag>=SHF_WRITE) {
-            testFlag -= SHF_WRITE;
+        if((testFlag&SHF_WRITE)==SHF_WRITE) {
             strFlag[a]='W';
             a++;
         }
-        strFlag[a] = '\0';
-        printf("%s",strFlag); //Write the flags
-        for(int k = strlen(strFlag);k<4 ;k++) { //For the alginement of column
-            printf(" ");
+        if((testFlag&SHF_ALLOC)==SHF_ALLOC) {
+            strFlag[a]='A';
+            a++;
         }
+        if((testFlag&SHF_EXECINSTR)==SHF_EXECINSTR) {
+            strFlag[a]='X';
+            a++;
+        }
+
+        strFlag[a] = '\0';
+        printf("%3.3s ",strFlag); //Write the flags
 
         printf("%2d ",seqHd.tab[i].sh_link);
         printf("%3d  ",seqHd.tab[i].sh_info);

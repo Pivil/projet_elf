@@ -55,10 +55,20 @@ void print1Byte(FILE *f,uint8_t x) {
     fprintf(f,"%c",x);
 }
 
-void print2Bytes(FILE *f,uint16_t x) {
-    fprintf(f,"%c%c",(x>>8) & 0xff,x & 0xff);
+void print2Bytes(FILE *f,uint16_t x,char endian) {
+    if(endian==1) { //Little endian
+        fprintf(f,"%c%c",x & 0xff,(x>>8) & 0xff);
+    }
+    else if(endian==2) { //Bif endian
+        fprintf(f,"%c%c",(x>>8) & 0xff,x & 0xff);
+    }
 }
 
-void print4Bytes(FILE *f,uint32_t x) {
-    fprintf(f,"%c%c%c%c",(x>>24) & 0xff,(x>>16) & 0xff,(x>>8) & 0xff,x & 0xff);
+void print4Bytes(FILE *f,uint32_t x, char endian) {
+    if(endian==1) { //Little endian
+        fprintf(f,"%c%c%c%c",x & 0xff,(x>>8) & 0xff,(x>>16) & 0xff,(x>>24) & 0xff);
+    }
+    else if(endian==2) {
+        fprintf(f,"%c%c%c%c",(x>>24) & 0xff,(x>>16) & 0xff,(x>>8) & 0xff,x & 0xff);
+    }
 }
