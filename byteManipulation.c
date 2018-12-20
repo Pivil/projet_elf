@@ -66,7 +66,7 @@ void print2Bytes(FILE *f,uint16_t x,char endian) {
 
 void print4Bytes(FILE *f,uint32_t x, char endian) {
     if(endian==1) { //Little endian
-        fprintf(f,"%c%c%c%c",x>> & 0xff,(x>>8) & 0xff,(x>>16) & 0xff,(x>>24) & 0xff);
+        fprintf(f,"%c%c%c%c",x & 0xff,(x>>8) & 0xff,(x>>16) & 0xff,(x>>24) & 0xff);
     }
     else if(endian==2) {
         fprintf(f,"%c%c%c%c",(x>>24) & 0xff,(x>>16) & 0xff,(x>>8) & 0xff,x & 0xff);
