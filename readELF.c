@@ -38,7 +38,7 @@ void printELFHeader(Elf32_Ehdr hd) {
     printf("\n");
     printf("Class: %s\n", hd.e_ident[EI_CLASS]==1 ? "32" : "64");
     printf("Data: %s\n", hd.e_ident[EI_DATA]==1 ? "little endian" : "big endian");
-    printf("Data: %d\n", hd.e_ident[EI_VERSION]);
+    printf("Version: %d\n", hd.e_ident[EI_VERSION]);
     printf("OS/ABI: %x (%s) \n", hd.e_ident[EI_OSABI], hd.e_ident[EI_OSABI]==0x61 ? "ARM":"Other");
     printf("Type: ");
     switch (hd.e_type) {
@@ -65,8 +65,8 @@ void printELFHeader(Elf32_Ehdr hd) {
         default:
             printf("Other\n");
     }
-    printf("Version: %d\n",hd.e_version);
-    printf("Version: 0x%x\n",hd.e_entry);
+    printf("Version: 0x%x\n",hd.e_version);
+    printf("Entry point adress: 0x%x\n",hd.e_entry);
     printf("Start of program headers: %d\n",hd.e_phoff);
     printf("Start of section headers: %d\n",hd.e_shoff);
     printf("Flags: 0x%x\n",hd.e_flags);
