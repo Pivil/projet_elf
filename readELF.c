@@ -36,20 +36,21 @@ void printELFHeader(Elf32_Ehdr hd) {
     for(int i=0;i<16;i++)
         printf("%s%x ",hd.e_ident[i]<=9?"0":"",hd.e_ident[i]);
     printf("\n");
-    printf("Class: %s\n", hd.e_ident[EI_CLASS]==1 ? "32" : "64");
+    printf("Class: ELF%s\n", hd.e_ident[EI_CLASS]==1 ? "32" : "64");
     printf("Data: %s\n", hd.e_ident[EI_DATA]==1 ? "little endian" : "big endian");
     printf("Version: %d\n", hd.e_ident[EI_VERSION]);
-    printf("OS/ABI: %x (%s) \n", hd.e_ident[EI_OSABI], hd.e_ident[EI_OSABI]==0x61 ? "ARM":"Other");
+    printf("OS/ABI: %x (%s)\n", hd.e_ident[EI_OSABI], hd.e_ident[EI_OSABI]==0x61 ? "ARM":"Other");
+    printf("Abi version: %d\n", hd.e_ident[EI_PAD]);
     printf("Type: ");
     switch (hd.e_type) {
         case 0:
             printf("NONE\n");
             break;
         case 1:
-            printf("REL\n");
+            printf("REL (Relocatable file)\n");
             break;
         case 2:
-            printf("EXEC\n");
+            printf("EXEC (Executable file)\n");
             break;
         default:
             printf("Other\n");
@@ -67,8 +68,8 @@ void printELFHeader(Elf32_Ehdr hd) {
     }
     printf("Version: 0x%x\n",hd.e_version);
     printf("Entry point adress: 0x%x\n",hd.e_entry);
-    printf("Start of program headers: %d\n",hd.e_phoff);
-    printf("Start of section headers: %d\n",hd.e_shoff);
+    printf("Start of program headers: %d (bytes into file)\n",hd.e_phoff);
+    printf("Start of section headers: %d (bytes into file)\n",hd.e_shoff);
     printf("Flags: 0x%x\n",hd.e_flags);
     printf("Size of this header: %d (bytes)\n",hd.e_ehsize);
     printf("Size of program headers: %d (bytes)\n",hd.e_phentsize);
