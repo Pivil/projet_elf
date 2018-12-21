@@ -136,3 +136,35 @@ void resizeFile(FILE* file, uint32_t offset, uint32_t size){
 		}
 	}
 }
+
+/******************************************************************************/
+                            /* Symbol Implentation */
+/******************************************************************************/
+// *** ETAPE 7 ***
+Elf32_Sym_seq symbReorder(FILE* input, Elf32_Shdr_seq* shd_o, Elf32_Ehdr* hd_o, int* oldIds) {
+    Elf32_Sym_seq arraySymbol = readSymbolTable(input, *shd_o, *hd_o);
+
+    for(int i = 0; i < arraySymbol.n ; i++) {
+    	printf("i : %i  -  tab[i] : %i\n", i, oldIds[i]);
+
+    }
+
+    for (int i = 0; i < arraySymbol.n; i++) { // Pour chaque numéro de section dans la table de symbole
+    	for (int j = 0; j < shd_o->n; j++) { // Pour chaque section
+    		if (arraySymbol.tab[i].st_shndx == oldIds[j]) {
+    			arraySymbol.tab[i].st_shndx = j;
+    			printf("Ancien ndx : %i  ||  Nouveau ndx : %i\n", oldIds[i], j); // Renumérotation des numéro de section (shndx) dans la table de symbole
+    		}
+    	}
+    }
+
+    return arraySymbol;
+}
+
+void symbolImplentation(FILE* file, Elf32_Ehdr* ehdr, Elf32_Shdr_seq* arraySection, int* tabCorrespondanceSection) {
+
+    //Renumérotation des sections (shndx)
+	Elf32_Sym_seq arraySymbol = symbReorder(file, arraySection, ehdr, tabCorrespondanceSection);    	  
+
+
+}

@@ -26,6 +26,13 @@ int main(int argc, char** argv){
 	}	
 	free(oldIds);
 	free(shd_o.tab);
+
+	// Partie 7 : table des symboles
+	printf("\n******** TESTS **********\n");
+
+	symbolImplentation(file, &hd_o, &shd_o, oldIds);
+	printf("\n****** FIN TESTS *******\n");
+
 	fclose(result);
 	fclose(file);
 	return 0;
