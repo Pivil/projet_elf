@@ -8,8 +8,8 @@ void secReorder(FILE* input,Elf32_Shdr_seq* shd_o,Elf32_Ehdr* hd_o,int* oldIds )
 	uint32_t old_shoff = hd_o->e_shoff;
 	int i,j,k,z;
 
-	uint32_t* rel_off;
-	uint32_t* rel_sumSize;
+	uint32_t* rel_off = malloc(hd_o->e_shnum*sizeof(uint32_t));
+	uint32_t* rel_sumSize = malloc(hd_o->e_shnum*sizeof(uint32_t));
 	j=0;k=0;
 	shd_o->n = j;
 	shd_o->tab = malloc(hd_o->e_shnum*sizeof(Elf32_Shdr));
@@ -23,17 +23,13 @@ void secReorder(FILE* input,Elf32_Shdr_seq* shd_o,Elf32_Ehdr* hd_o,int* oldIds )
 		else{
 
 
-			if(k == 0){
-
-				rel_off = malloc(sizeof(uint32_t));
-				rel_sumSize = malloc(sizeof(uint32_t));
-			}
-			else{
-				rel_off = realloc(rel_off,(k+1)*sizeof(uint32_t));
-				rel_sumSize = realloc(rel_sumSize,(k+1)*sizeof(uint32_t));
-			}
-			if(rel_off[k] && rel_sumSize[k]){
-				if(shd.tab[i].sh_offset >= rel_off[k-1]){
+			if(rel_off && rel_sumSize){
+				
+				if(k == 0){
+					rel_off[k] = shd.tab[i].sh_offset;
+					rel_sumSize[k] = shd.tab[i].sh_size;
+				}
+				else if(shd.tab[i].sh_offset >= rel_off[k-1]){
 					if(shd.tab[i].sh_size > 0){
 						rel_off[k] = shd.tab[i].sh_offset;
 						rel_sumSize[k] = rel_sumSize[k-1]+shd.tab[i].sh_size;
@@ -71,26 +67,36 @@ void secReorder(FILE* input,Elf32_Shdr_seq* shd_o,Elf32_Ehdr* hd_o,int* oldIds )
 			}		
 
 
-
 			if(shd.tab[i].sh_offset < old_shoff){
 				shoff_off += shd.tab[i].sh_size;	
 			}
 		}
 	}
-
-	shd_o->n = j-1;
+	rel_off = realloc(rel_off,k*sizeof(uint32_t));
+	rel_sumSize = realloc(rel_sumSize,k*sizeof(uint32_t));
+			
+	shd_o->n = j;
 	shd_o->tab = realloc(shd_o->tab,j*sizeof(Elf32_Shdr));
 	oldIds = realloc(oldIds,j*sizeof(int));
 	for(z = 0; z < j; z++){
-		i = 0;
-		while(rel_off[i] < shd_o->tab[z].sh_offset && i < k){
+		i = -1;
+		while(rel_off[i+1] < shd_o->tab[z].sh_offset && i < k){
 
 			i++;
 		}
-		i--;
-		shd_o->tab[z].sh_offset -= rel_sumSize[i];			
+		
+		if(shd_o->tab[z].sh_link != 0){
+			for(int w = 0; w < j; w++){
+				if((unsigned int)oldIds[w] == shd_o->tab[z].sh_link){
+					shd_o->tab[z].sh_link = w;
+				}
+			}
+		}		
+		if(i >= 0){
+			shd_o->tab[z].sh_offset -= rel_sumSize[i];			
+		}
 	}
-	hd_o->e_shnum = j-1;
+	hd_o->e_shnum = j;
 	hd_o->e_shoff -= shoff_off;
 	free(rel_sumSize);
 	free(rel_off);
