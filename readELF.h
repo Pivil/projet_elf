@@ -145,3 +145,15 @@ Entries: the relocation table, the section header, the file
 Result: print the relocation table
 */
 void printRelocationTable(Elf32_Rel_seq relT, Elf32_Shdr_seq arraySection, Elf32_Sym_seq symSeq,Elf32_Ehdr hd,FILE *f);
+
+/******************************************************************************/
+                            /* Symbol Implentation */
+/******************************************************************************/
+
+
+
+
+
+
+
+

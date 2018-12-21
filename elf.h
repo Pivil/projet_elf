@@ -159,6 +159,7 @@ typedef struct {
 #define ELF64_R_TYPE(i)			((i) & 0xffffffff)
 
 #define R_ARM_NONE 0
+#define R_ARM_PC24 1
 #define R_ARM_ABS32 2
 #define R_ARM_ABS16 5
 #define R_ARM_ABS8 8
