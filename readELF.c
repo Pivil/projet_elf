@@ -331,58 +331,60 @@ Elf32_Sym_seq readSymbolTable(FILE* f, Elf32_Shdr_seq arraySection,Elf32_Ehdr hd
 
 void printSymbolTable(Elf32_Sym_seq seqSym, Elf32_Shdr_seq arraySection,FILE *f) {
     printf("Num:    Value  Size Type    Bind   Vis      Ndx Name\n");
-    for(int iSym=0;iSym<seqSym.n;iSym++) {
+    printf("  0: 00000000     0 NOTYPE  LOCAL  DEFAULT  UND \n");
+    for(int iSym=1;iSym<seqSym.n;iSym++) {
         printf("%3d: ", iSym);
-        printf("%8.8x ", seqSym.tab[iSym].st_value);
+        printf("%8.8x  ", seqSym.tab[iSym].st_value);
         printf("%4d ", seqSym.tab[iSym].st_size);
 
         switch (ELF32_ST_TYPE(seqSym.tab[iSym].st_info)) {
             case STT_NOTYPE:
-            printf("%7.7s ","NOTYPE");
+            printf("NOTYPE  ");
             break;
             case STT_OBJECT:
-            printf("%7.7s ","OBJECT");
+            printf("OBJECT  ");
             break;
             case STT_FUNC:
-            printf("%7.7s ","FUNC");
+            printf("FUNC    ");
             break;
             case STT_SECTION:
-            printf("%7.7s ","SECTION");
+            printf("SECTION ");
             break;
             case STT_FILE:
-            printf("%7.7s ","WEFILEAK");
+            printf("FILE    ");
             break;
             case STT_COMMON:
-            printf("%7.7s ","COMMON");
+            printf("COMMON  ");
             break;
             case STT_TLS:
-            printf("%7.7s ","TLS");
+            printf("TLS     ");
             break;
             default:
-            printf("%7.7s ","UNKNOWN");
+            printf("UNKNOWN");
             break;
         }
 
         switch (ELF32_ST_BIND(seqSym.tab[iSym].st_info)) {
             case STB_LOCAL:
-            printf("%6.6s ","LOCAL");
+            printf("LOCAL  ");
             break;
             case STB_GLOBAL:
-            printf("%6.6s ","LOCAL");
+            printf("GLOBAL ");
             break;
             case STB_WEAK:
-            printf("%6.6s ","WEAK");
+            printf("WEAK    ");
             break;
             default:
-            printf("%6.6s ","UNKNOWN");
+            printf("UNKNOWN");
             break;
         }
-        if(iSym==0)
-            printf("UND     ");
+        printf("DEFAULT  ");
+
+        if(seqSym.tab[iSym].st_shndx==SHN_ABS)
+            printf("ABS ");
         else
-            printf("DEFAULT ");
-        printf("%3d   ",seqSym.tab[iSym].st_shndx);
-        printf("%4.15s ",getSymbolName(seqSym.tab[iSym],arraySection,f));
+            printf("%3d ",seqSym.tab[iSym].st_shndx);
+        printf("%s ",getSymbolName(seqSym.tab[iSym],arraySection,f));
         printf("\n");
     }
 }
@@ -424,43 +426,49 @@ Elf32_Rel_seq readRelocationTable(FILE* f, Elf32_Shdr_seq arraySection, Elf32_Eh
 void printRelocationTable(Elf32_Rel_seq relT, Elf32_Shdr_seq arraySection, Elf32_Sym_seq symSeq,Elf32_Ehdr hd,FILE *f) {
 
     for(int i=0;i<relT.n;i++) {// For each table of relocation
-        printf("Relocation section %s at offset 0x%x: \n",relT.tab[i].name,relT.tab[i].offset);
-        printf("  Offset     Info    Type       NumSymbol Sym.Value Sym.Name     Section.Name\n");
+        printf("\n");
+        printf("Relocation section '%s' at offset 0x%x contains %d entries:\n",relT.tab[i].name,relT.tab[i].offset,relT.tab[i].n);
+        printf(" Offset     Info    Type            Sym.Value  Sym. Name\n");
 
         for(int k=0;k<relT.tab[i].n;k++) {// For each value of the table
-            printf("%8.8x ",relT.tab[i].tabRelocation[k].r_offset);
+            printf("%8.8x  ",relT.tab[i].tabRelocation[k].r_offset);
             printf("%8.8x ",relT.tab[i].tabRelocation[k].r_info);
 
             switch (ELF32_R_TYPE(relT.tab[i].tabRelocation[k].r_info)) {
                 case R_ARM_NONE:
-                printf("%12.12s ","R_ARM_NONE");
+                printf("%-17.17s ","R_ARM_NONE");
                 break;
                 case R_ARM_ABS32:
-                printf("%12.12s ","R_ARM_ABS32");
+                printf("%-17.17s ","R_ARM_ABS32");
                 break;
                 case R_ARM_ABS16:
-                printf("%12.12s","R_ARM_ABS16");
+                printf("%-17.17s","R_ARM_ABS16");
                 break;
                 case R_ARM_ABS8:
-                printf("%12.12s ","R_ARM_ABS8");
+                printf("%-17.17s ","R_ARM_ABS8");
                 break;
                 case R_ARM_CALL:
-                printf("%12.12s ","R_ARM_CALL");
+                printf("%-17.17s ","R_ARM_CALL");
+                break;
+                case R_ARM_PC24:
+                printf("%-17.17s ","R_ARM_PC24");
                 break;
                 case R_ARM_JUMP24:
-                printf("%12.12s ","R_ARM_JUMP24");
+                printf("%-17.17s ","R_ARM_JUMP24");
                 break;
                 default:
-                printf("%12.12s ","UNKNWON");
+                printf("%-17.17s ","UNKNWON");
                 break;
             }
             unsigned int numSym = ELF32_R_SYM(relT.tab[i].tabRelocation[k].r_info);
-            printf(" %8.8x  ",numSym);//The num of the symbol
-            printf("%8.8x",symSeq.tab[numSym].st_value); //The symbol Value
-            printf("%16.16s",getSymbolName(symSeq.tab[numSym],arraySection ,f)); //The symbol name
-            printf("%s",getSectionName(arraySection,symSeq.tab[numSym].st_shndx,hd,f)); //The section concerned name
+            printf("%8.8x   ",symSeq.tab[numSym].st_value); //The symbol Value
+            if((ELF32_ST_TYPE(symSeq.tab[numSym].st_info)==STT_NOTYPE)) {
+                printf("%s",getSymbolName(symSeq.tab[numSym],arraySection,f));//The symbol concerned name
+            }
+            else {
+                printf("%s",getSectionName(arraySection,symSeq.tab[numSym].st_shndx,hd,f)); //The section concerned name
+            }
             printf("\n");
         }
-        printf("\n");
     }
 }
