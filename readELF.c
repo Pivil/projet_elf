@@ -473,7 +473,7 @@ void symbolImplentation(FILE* file, Elf32_Shdr_seq arraySection, Elf32_Ehdr ehdr
     Elf32_Sym_seq arraySymbol = readSymbolTable(file, arraySection, ehdr);
     int i;
     for (i = 0; i < arraySymbol.n; i++) {
-        if (arraySymbol[i].st_value != 0) {
+        if (arraySymbol.tab[i].st_value != 0) {
             
         }
     

@@ -150,7 +150,6 @@ void printRelocationTable(Elf32_Rel_seq relT, Elf32_Shdr_seq arraySection, Elf32
                             /* Symbol Implentation */
 /******************************************************************************/
 
-static int elf_get_symval(Elf32_Ehdr *hdr, int table, uint idx);
 
 
 
