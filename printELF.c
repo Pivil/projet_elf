@@ -68,6 +68,10 @@ int main(int argc,char * argv[]) {
             free(shd.tab);free(symTab.tab); //TODO free
             fclose(f);
         }
+        else if(!strcmp(argv[1],"-l")) { //Print the TEST
+			//static int elf_get_symval(Elf32_Ehdr *hdr, int table, uint idx)
+            Elf32_Ehdr hd = readELFHeader(f);
+	}
 
     }
     else if (argc==4) {

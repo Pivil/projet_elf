@@ -472,3 +472,75 @@ void printRelocationTable(Elf32_Rel_seq relT, Elf32_Shdr_seq arraySection, Elf32
         }
     }
 }
+
+/******************************************************************************/
+                            /* Symbol Implentation */
+/******************************************************************************/
+// *** ETAPE 7 ***
+void symbolImplentation(FILE* file, Elf32_Shdr_seq arraySection, Elf32_Ehdr ehdr) {
+    Elf32_Sym_seq arraySymbol = readSymbolTable(file, arraySection, ehdr);
+    int i;
+    for (i = 0; i < arraySymbol.n; i++) {
+        if (arraySymbol.tab[i].st_value != 0) {
+            
+        }
+    
+    } 
+
+    
+
+
+}
+
+
+
+
+
+/*
+static int elf_get_symval(Elf32_Ehdr *hdr, int table, uint idx) {
+	if (table == SHN_UNDEF || idx == SHN_UNDEF) return 0;
+	Elf32_Shdr *symtab = elf_section(hdr, table);
+ 
+	uint32_t symtab_entries = symtab->sh_size / symtab->sh_entsize;
+	if (idx >= symtab_entries) {
+		ERROR("Symbol Index out of Range (%d:%u).\n", table, idx);
+		return ELF_RELOC_ERR;
+	}
+ 
+	int symaddr = (int)hdr + symtab->sh_offset;
+	Elf32_Sym *symbol = &((Elf32_Sym *)symaddr)[idx];
+	if (symbol->st_shndx == SHN_UNDEF) {
+		// External symbol, lookup value
+		Elf32_Shdr *strtab = elf_section(hdr, symtab->sh_link);
+		const char *name = (const char *)hdr + strtab->sh_offset + symbol->st_name;
+ 
+		extern void *elf_lookup_symbol(const char *name);
+		void *target = elf_lookup_symbol(name);
+ 
+		if (target == NULL) {
+			// Extern symbol not found
+			if (ELF32_ST_BIND(symbol->st_info) & STB_WEAK) {
+				// Weak symbol initialized as 0
+				return 0;
+			} 
+			else {
+				ERROR("Undefined External Symbol : %s.\n", name);
+				return ELF_RELOC_ERR;
+			}
+		} 
+		else {
+			return (int)target;
+		}
+
+	} 
+	else if (symbol->st_shndx == SHN_ABS) {
+		// Absolute symbol
+		return symbol->st_value;
+	} 
+	else {
+		// Internally defined symbol
+		Elf32_Shdr *target = elf_section(hdr, symbol->st_shndx);
+		return (int)hdr + symbol->st_value + target->sh_offset;
+	}
+}
+*/
