@@ -240,11 +240,14 @@ void printSectionHeader(Elf32_Shdr_seq seqHd,Elf32_Ehdr hd,FILE *f) {
 char_array readSectionByName(FILE* f, Elf32_Shdr_seq arraySection, char * name, Elf32_Ehdr hd) {
     char_array h;
     int found=-1;
+    char *nameSection=NULL;
     /*Test the string*/
     for(int i=0;i<arraySection.n;i++) {
-        if(!strcmp(getSectionName(arraySection,i,hd,f),name)) {
+        nameSection = getSectionName(arraySection,i,hd,f);
+        if(!strcmp(nameSection,name)) {
             found = i;
         }
+        free(nameSection);
     }
     if (found==-1) { //The section is not present
         printf("ERROR: name not found in the section header!\n");
@@ -325,10 +328,7 @@ void printSection(char_array h) {
 
 char * getSymbolName(Elf32_Sym sym, Elf32_Shdr_seq seqSection, FILE *f) {
     char *str = malloc(100);
-    /*for(int i=0;indexNameSymbol==-1 && i<seqSection.n;i++) { //Find the index of the symbol table in the header section
-        if(seqSection.tab[i].sh_type == SHT_SYMTAB)
-            indexNameSymbol=1;
-    }*/
+    str[0]=0; //Unintialize to an empty string
     if (sym.st_name==0)
         return str;
 
@@ -376,6 +376,7 @@ Elf32_Sym_seq readSymbolTable(FILE* f, Elf32_Shdr_seq arraySection,Elf32_Ehdr hd
 void printSymbolTable(Elf32_Sym_seq seqSym, Elf32_Shdr_seq arraySection,FILE *f) {
     printf("Num:    Value  Size Type    Bind   Vis      Ndx Name\n");
     printf("  0: 00000000     0 NOTYPE  LOCAL  DEFAULT  UND \n");
+    char * nameSymbol=NULL;
     for(int iSym=1;iSym<seqSym.n;iSym++) {
         printf("%3d: ", iSym);
         printf("%8.8x  ", seqSym.tab[iSym].st_value);
@@ -428,7 +429,9 @@ void printSymbolTable(Elf32_Sym_seq seqSym, Elf32_Shdr_seq arraySection,FILE *f)
             printf("ABS ");
         else
             printf("%3d ",seqSym.tab[iSym].st_shndx);
-        printf("%s ",getSymbolName(seqSym.tab[iSym],arraySection,f));
+        nameSymbol = getSymbolName(seqSym.tab[iSym],arraySection,f);
+        printf("%s ",nameSymbol);
+        free(nameSymbol);
         printf("\n");
     }
 }
