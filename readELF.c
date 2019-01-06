@@ -14,19 +14,20 @@ Elf32_Ehdr readELFHeader(FILE *f) {
     for(int i=0;i<16;i++) {
         hd.e_ident[i]=get1Byte(f);
     }
-    hd.e_type = get2Bytes(f,hd.e_ident[EI_DATA]);
-    hd.e_machine = get2Bytes(f,hd.e_ident[EI_DATA]);
-    hd.e_version = get4Bytes(f,hd.e_ident[EI_DATA]);
-    hd.e_entry = get4Bytes(f,hd.e_ident[EI_DATA]); // This is the memory address of the entry point from where the process starts executing
-    hd.e_phoff = get4Bytes(f,hd.e_ident[EI_DATA]); // Points to the start of the program header table
-    hd.e_shoff = get4Bytes(f,hd.e_ident[EI_DATA]); // Points to the start of the section header table
-    hd.e_flags = get4Bytes(f,hd.e_ident[EI_DATA]);
-    hd.e_ehsize = get2Bytes(f,hd.e_ident[EI_DATA]); //Contains the size of this header, normally 64 Bytes for 64-bit and 52 Bytes for 32-bit format
-    hd.e_phentsize = get2Bytes(f,hd.e_ident[EI_DATA]); // Contains the size of a program header table entry
-    hd.e_phnum = get2Bytes(f,hd.e_ident[EI_DATA]); // Contains the number of entries in the program header table
-    hd.e_shentsize = get2Bytes(f,hd.e_ident[EI_DATA]); // Contains the size of a section header table entry
-    hd.e_shnum = get2Bytes(f,hd.e_ident[EI_DATA]); //Contains the number of entries in the section header table
-    hd.e_shstrndx = get2Bytes(f,hd.e_ident[EI_DATA]); //Contains index of the section header table entry that contains the section names
+    char endianness = hd.e_ident[EI_DATA];
+    hd.e_type = get2Bytes(f,endianness);
+    hd.e_machine = get2Bytes(f,endianness);
+    hd.e_version = get4Bytes(f,endianness);
+    hd.e_entry = get4Bytes(f,endianness); // This is the memory address of the entry point from where the process starts executing
+    hd.e_phoff = get4Bytes(f,endianness); // Points to the start of the program header table
+    hd.e_shoff = get4Bytes(f,endianness); // Points to the start of the section header table
+    hd.e_flags = get4Bytes(f,endianness);
+    hd.e_ehsize = get2Bytes(f,endianness); //Contains the size of this header, normally 64 Bytes for 64-bit and 52 Bytes for 32-bit format
+    hd.e_phentsize = get2Bytes(f,endianness); // Contains the size of a program header table entry
+    hd.e_phnum = get2Bytes(f,endianness); // Contains the number of entries in the program header table
+    hd.e_shentsize = get2Bytes(f,endianness); // Contains the size of a section header table entry
+    hd.e_shnum = get2Bytes(f,endianness); //Contains the number of entries in the section header table
+    hd.e_shstrndx = get2Bytes(f,endianness); //Contains index of the section header table entry that contains the section names
     return hd;
 }
 
@@ -110,18 +111,18 @@ Elf32_Shdr_seq readSectionHeader(FILE *f, Elf32_Ehdr hd) {
     seq.tab = malloc(sizeof(Elf32_Shdr)*seq.n);
 
     fseek(f,hd.e_shoff,SEEK_SET); //Go to the beginning of the section header
-
+    char endianness = hd.e_ident[EI_DATA];
     for(int i=0;i<seq.n;i++ ) {
-        seq.tab[i].sh_name = get4Bytes(f,hd.e_ident[EI_DATA]);
-        seq.tab[i].sh_type = get4Bytes(f,hd.e_ident[EI_DATA]);
-        seq.tab[i].sh_flags = get4Bytes(f,hd.e_ident[EI_DATA]);
-        seq.tab[i].sh_addr = get4Bytes(f,hd.e_ident[EI_DATA]);
-        seq.tab[i].sh_offset = get4Bytes(f,hd.e_ident[EI_DATA]);
-        seq.tab[i].sh_size = get4Bytes(f,hd.e_ident[EI_DATA]);
-        seq.tab[i].sh_link = get4Bytes(f,hd.e_ident[EI_DATA]);
-        seq.tab[i].sh_info = get4Bytes(f,hd.e_ident[EI_DATA]);
-        seq.tab[i].sh_addralign = get4Bytes(f,hd.e_ident[EI_DATA]);
-        seq.tab[i].sh_entsize = get4Bytes(f,hd.e_ident[EI_DATA]);
+        seq.tab[i].sh_name = get4Bytes(f,endianness);
+        seq.tab[i].sh_type = get4Bytes(f,endianness);
+        seq.tab[i].sh_flags = get4Bytes(f,endianness);
+        seq.tab[i].sh_addr = get4Bytes(f,endianness);
+        seq.tab[i].sh_offset = get4Bytes(f,endianness);
+        seq.tab[i].sh_size = get4Bytes(f,endianness);
+        seq.tab[i].sh_link = get4Bytes(f,endianness);
+        seq.tab[i].sh_info = get4Bytes(f,endianness);
+        seq.tab[i].sh_addralign = get4Bytes(f,endianness);
+        seq.tab[i].sh_entsize = get4Bytes(f,endianness);
     }
     return seq;
 }
@@ -359,13 +360,14 @@ Elf32_Sym_seq readSymbolTable(FILE* f, Elf32_Shdr_seq arraySection,Elf32_Ehdr hd
     seqSym.tab = malloc(nbSymbol*(sizeof(Elf32_Sym)));
 
     int iSym=0;
+    char endianness = hd.e_ident[EI_DATA];
     for(int i=0;i<nbSymbol;i++) { //For each symbol
-        seqSym.tab[iSym].st_name = get4Bytes(f,hd.e_ident[EI_DATA]);
-        seqSym.tab[iSym].st_value = get4Bytes(f,hd.e_ident[EI_DATA]);
-        seqSym.tab[iSym].st_size = get4Bytes(f,hd.e_ident[EI_DATA]);
+        seqSym.tab[iSym].st_name = get4Bytes(f,endianness);
+        seqSym.tab[iSym].st_value = get4Bytes(f,endianness);
+        seqSym.tab[iSym].st_size = get4Bytes(f,endianness);
         seqSym.tab[iSym].st_info = get1Byte(f);
         seqSym.tab[iSym].st_other = get1Byte(f);
-        seqSym.tab[iSym].st_shndx = get2Bytes(f,hd.e_ident[EI_DATA]);
+        seqSym.tab[iSym].st_shndx = get2Bytes(f,endianness);
         iSym++;
     }
     return seqSym;
@@ -443,21 +445,21 @@ Elf32_Rel_seq readRelocationTable(FILE* f, Elf32_Shdr_seq arraySection, Elf32_Eh
             nbRelocation++;
         }
     }
-    seqRel.n=nbRelocation;
+    seqRel.n=nbRelocation; //The number of relocation section
     seqRel.tab = malloc(sizeof(Elf32_Rel_expend)*nbRelocation);
     int iTableReloc=0;
-    for (int i=0;i<arraySection.n;i++) {
+    for (int i=0;i<arraySection.n;i++) { //For each section
         if(arraySection.tab[i].sh_type == SHT_REL) { //A relocation table
-            seqRel.tab[iTableReloc].n = arraySection.tab[i].sh_size/8;
+            seqRel.tab[iTableReloc].n = arraySection.tab[i].sh_size/8; //The number of entries for this relocation section
             seqRel.tab[iTableReloc].tabRelocation = malloc(arraySection.tab[i].sh_size);
-            seqRel.tab[iTableReloc].offset = arraySection.tab[i].sh_offset;
-            seqRel.tab[iTableReloc].name = getSectionName(arraySection,i,hd,f);
+            seqRel.tab[iTableReloc].offset = arraySection.tab[i].sh_offset; //Offset of the reloc section
+            seqRel.tab[iTableReloc].name = getSectionName(arraySection,i,hd,f); //Name of the reloc section
 
             fseek(f,arraySection.tab[i].sh_offset,SEEK_SET); //Go to the section for the relocation
-
+            char endianness = hd.e_ident[EI_DATA];
             for(int k=0;k<seqRel.tab[iTableReloc].n;k++) { //For each value of the relocation table
-                seqRel.tab[iTableReloc].tabRelocation[k].r_offset = get4Bytes(f,hd.e_ident[EI_DATA]);
-                seqRel.tab[iTableReloc].tabRelocation[k].r_info = get4Bytes(f,hd.e_ident[EI_DATA]);
+                seqRel.tab[iTableReloc].tabRelocation[k].r_offset = get4Bytes(f,endianness);
+                seqRel.tab[iTableReloc].tabRelocation[k].r_info = get4Bytes(f,endianness);
             }
             iTableReloc ++;
         }
