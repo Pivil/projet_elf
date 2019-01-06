@@ -276,6 +276,48 @@ char_array readSectionByIndex(FILE* f, Elf32_Shdr_seq arraySection, int index) {
     return h;
 }
 
+void printSection(char_array h) {
+    if (h.n==0) {
+        printf("The section is empty\n");
+    }
+    for(int i=0;i<h.n;i++) {
+        if (i%16==0) { //Print the adress
+            printf("\n0x%8.8x ",i);
+        }
+
+        printf("%2.2x",h.tab[i]); //Print the value
+        if ((i+1)%4==0) {
+            printf(" ");
+        }
+        if((i+1)%16==0) { //Print a string value
+            for(int k=i-15;k<=i;k++) {
+                if (h.tab[k]>=32 && h.tab[k]<=126) {
+                    printf("%c",h.tab[k]);
+                }
+                else {
+                    printf(".");
+                }
+            }
+        }
+        else if (i==h.n-1) {  // Last line: Print a string value
+            for(int k=0;k<=15-(i%16);k++) { //Print the white space
+                if((k+((i+1)%4)%4==0))
+                    printf(" ");
+                printf("  ");
+            }
+            for(int k=i-(h.n%16)+1;k<=i;k++) {
+                if (h.tab[k]>=32 && h.tab[k]<=126) {
+                    printf("%c",h.tab[k]);
+                }
+                else {
+                    printf(".");
+                }
+            }
+        }
+    }
+    printf("\n");
+}
+
 /******************************************************************************/
                             /* Symbol Table */
 /******************************************************************************/
@@ -482,12 +524,12 @@ void symbolImplentation(FILE* file, Elf32_Shdr_seq arraySection, Elf32_Ehdr ehdr
     int i;
     for (i = 0; i < arraySymbol.n; i++) {
         if (arraySymbol.tab[i].st_value != 0) {
-            
-        }
-    
-    } 
 
-    
+        }
+
+    }
+
+
 
 
 }
@@ -500,43 +542,43 @@ void symbolImplentation(FILE* file, Elf32_Shdr_seq arraySection, Elf32_Ehdr ehdr
 static int elf_get_symval(Elf32_Ehdr *hdr, int table, uint idx) {
 	if (table == SHN_UNDEF || idx == SHN_UNDEF) return 0;
 	Elf32_Shdr *symtab = elf_section(hdr, table);
- 
+
 	uint32_t symtab_entries = symtab->sh_size / symtab->sh_entsize;
 	if (idx >= symtab_entries) {
 		ERROR("Symbol Index out of Range (%d:%u).\n", table, idx);
 		return ELF_RELOC_ERR;
 	}
- 
+
 	int symaddr = (int)hdr + symtab->sh_offset;
 	Elf32_Sym *symbol = &((Elf32_Sym *)symaddr)[idx];
 	if (symbol->st_shndx == SHN_UNDEF) {
 		// External symbol, lookup value
 		Elf32_Shdr *strtab = elf_section(hdr, symtab->sh_link);
 		const char *name = (const char *)hdr + strtab->sh_offset + symbol->st_name;
- 
+
 		extern void *elf_lookup_symbol(const char *name);
 		void *target = elf_lookup_symbol(name);
- 
+
 		if (target == NULL) {
 			// Extern symbol not found
 			if (ELF32_ST_BIND(symbol->st_info) & STB_WEAK) {
 				// Weak symbol initialized as 0
 				return 0;
-			} 
+			}
 			else {
 				ERROR("Undefined External Symbol : %s.\n", name);
 				return ELF_RELOC_ERR;
 			}
-		} 
+		}
 		else {
 			return (int)target;
 		}
 
-	} 
+	}
 	else if (symbol->st_shndx == SHN_ABS) {
 		// Absolute symbol
 		return symbol->st_value;
-	} 
+	}
 	else {
 		// Internally defined symbol
 		Elf32_Shdr *target = elf_section(hdr, symbol->st_shndx);

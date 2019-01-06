@@ -87,19 +87,7 @@ int main(int argc,char * argv[]) {
                 Elf32_Shdr_seq shd = readSectionHeader(f,hd);
 
                 h = readSectionByIndex(f,shd, atoi(argv[2]));
-                if (h.n==0) {
-                    printf("The section is empty\n");
-                }
-                for(int i=0;i<h.n;i++) {
-                    if (i%16==0) { //Print the adress
-                        printf("\n0x%8.8x ",i);
-                    }
-                    printf("%2.2x",h.tab[i]);
-                    if ((i+1)%4==0) {
-                        printf(" ");
-                    }
-                }
-                printf("\n");
+                printSection(h);
                 free(shd.tab);free(h.tab);
                 fclose(f);
             }
@@ -108,19 +96,7 @@ int main(int argc,char * argv[]) {
                 Elf32_Shdr_seq shd = readSectionHeader(f,hd);
 
                 h = readSectionByName(f, shd, argv[2],hd);
-                if (h.n==0) {
-                    printf("The section is empty!\n");
-                }
-                for(int i=0;i<h.n;i++) {
-                    if (i%16==0) { //Print the adress
-                        printf("\n0x%8.8x ",i);
-                    }
-                    printf("%2.2x",h.tab[i]); //Print the value
-                    if ((i+1)%4==0) {
-                        printf(" ");
-                    }
-                }
-                printf("\n");
+                printSection(h);
                 free(shd.tab); free(h.tab);
                 fclose(f);
             }
