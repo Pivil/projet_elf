@@ -19,7 +19,7 @@ void secReorder(FILE* input,Elf32_Shdr_seq* shd_o,Elf32_Ehdr* hd_o,int* oldIds )
 			shd_o->tab[j] = shd.tab[i];
 			oldIds[j] = i;
 			j++;
-		} 
+		}
 		else{
 
 
@@ -68,12 +68,12 @@ void secReorder(FILE* input,Elf32_Shdr_seq* shd_o,Elf32_Ehdr* hd_o,int* oldIds )
 
 				}
 				k++;
-			}		
+			}
 
 
 
 			if(shd.tab[i].sh_offset < old_shoff){
-				shoff_off += shd.tab[i].sh_size;	
+				shoff_off += shd.tab[i].sh_size;
 			}
 		}
 	}
@@ -88,7 +88,7 @@ void secReorder(FILE* input,Elf32_Shdr_seq* shd_o,Elf32_Ehdr* hd_o,int* oldIds )
 			i++;
 		}
 		i--;
-		shd_o->tab[z].sh_offset -= rel_sumSize[i];			
+		shd_o->tab[z].sh_offset -= rel_sumSize[i];
 	}
 	hd_o->e_shnum = j-1;
 	hd_o->e_shoff -= shoff_off;
@@ -135,4 +135,50 @@ void resizeFile(FILE* file, uint32_t offset, uint32_t size){
 			}
 		}
 	}
+}
+
+/******************************************************************************/
+                            /* Symbol Implentation */
+/******************************************************************************/
+// *** ETAPE 7 ***
+Elf32_Sym_seq symbReorder(FILE* input, Elf32_Shdr_seq* shd_o, Elf32_Ehdr* hd_o, int* oldIds) {
+    Elf32_Sym_seq arraySymbol = readSymbolTable(input, *shd_o, *hd_o);
+/*
+    for(int i = 0; i < arraySymbol.n ; i++) {
+    	printf("i : %i  -  tab[i] : %i\n", i, oldIds[i]);
+
+    }
+*/
+    for (int i = 0; i < arraySymbol.n; i++) { // Pour chaque numéro de section dans la table de symbole
+    	for (int j = 0; j < shd_o->n; j++) { // Pour chaque section
+    		if (arraySymbol.tab[i].st_shndx == oldIds[j]) {
+    			arraySymbol.tab[i].st_shndx = j;
+    			printf("Ancien ndx : %i  ||  Nouveau ndx : %i\n", oldIds[j], j); // Renumérotation des numéro de section (shndx) dans la table de symbole
+
+    		}
+    	}
+    }
+    /*
+*/
+    return arraySymbol;
+}
+
+
+
+void symbolImplentation(FILE* file, Elf32_Ehdr* ehdr, Elf32_Shdr_seq* arraySection, int* tabCorrespondanceSection) {
+
+    //Renumérotation des sections (shndx)
+	Elf32_Sym_seq arraySymbol = symbReorder(file, arraySection, ehdr, tabCorrespondanceSection);
+	printf("Debut de l'implentation des symboles\n");
+	for (int i = 0; i < arraySymbol.n; i++) {
+		for (int j = 0; j < arraySection->n; i++) {
+			if (arraySymbol.tab[i].st_shndx == arraySection->tab[j].sh_name) {
+				//printf("Mise à jour du symbole %i, ancienne value : %i, nouvelle value : %i (section %i, adresse %i)")
+				arraySymbol.tab[i].st_value += arraySection->tab[i].sh_addr // TODO : Demander pourquoi les sh_addr sont
+																					//tous à 0 dans la table des sections
+			}
+		}
+	}
+
+
 }
