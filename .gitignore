@@ -2,3 +2,4 @@ byteManipulation.o
 printELF.o
 readELF.o
 printELF
+relocTest
