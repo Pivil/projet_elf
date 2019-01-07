@@ -48,13 +48,13 @@ int main(int argc,char * argv[]) {
             free(shd.tab);
             fclose(f);
         }
-
         else if(!strcmp(argv[1],"-s") || !strcmp(argv[1],"--symbolTable")) { //Print the symbol table
             Elf32_Ehdr hd = readELFHeader(f);
             Elf32_Shdr_seq shd = readSectionHeader(f,hd);
             Elf32_Sym_seq symTab = readSymbolTable(f,shd,hd);
             printSymbolTable(symTab,shd,f);
-            free(shd.tab); free(symTab.tab);
+            free(symTab.tab);
+            free(shd.tab);
             fclose(f);
         }
 
@@ -65,14 +65,13 @@ int main(int argc,char * argv[]) {
             Elf32_Rel_seq seqRel = readRelocationTable(f,shd,hd);
 
             printRelocationTable(seqRel,shd,symTab,hd,f);
-            free(shd.tab);free(symTab.tab); //TODO free
+            free(shd.tab);free(symTab.tab);
             fclose(f);
         }
-        else if(!strcmp(argv[1],"-l")) { //Print the TEST
-			//static int elf_get_symval(Elf32_Ehdr *hdr, int table, uint idx)
-            Elf32_Ehdr hd = readELFHeader(f);
-	}
-
+        else { //Bad values
+            printHelp();
+            fclose(f);
+        }
     }
     else if (argc==4) {
         char_array h;
@@ -87,19 +86,7 @@ int main(int argc,char * argv[]) {
                 Elf32_Shdr_seq shd = readSectionHeader(f,hd);
 
                 h = readSectionByIndex(f,shd, atoi(argv[2]));
-                if (h.n==0) {
-                    printf("The section is empty\n");
-                }
-                for(int i=0;i<h.n;i++) {
-                    if (i%16==0) { //Print the adress
-                        printf("\n0x%8.8x ",i);
-                    }
-                    printf("%2.2x",h.tab[i]);
-                    if ((i+1)%4==0) {
-                        printf(" ");
-                    }
-                }
-                printf("\n");
+                printSection(h);
                 free(shd.tab);free(h.tab);
                 fclose(f);
             }
@@ -108,25 +95,14 @@ int main(int argc,char * argv[]) {
                 Elf32_Shdr_seq shd = readSectionHeader(f,hd);
 
                 h = readSectionByName(f, shd, argv[2],hd);
-                if (h.n==0) {
-                    printf("The section is empty!\n");
-                }
-                for(int i=0;i<h.n;i++) {
-                    if (i%16==0) { //Print the adress
-                        printf("\n0x%8.8x ",i);
-                    }
-                    printf("%2.2x",h.tab[i]); //Print the value
-                    if ((i+1)%4==0) {
-                        printf(" ");
-                    }
-                }
-                printf("\n");
+                printSection(h);
                 free(shd.tab); free(h.tab);
                 fclose(f);
             }
         }
         else { //Bad values
             printHelp();
+            fclose(f);
         }
     }
     else { //Bad values

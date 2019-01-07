@@ -79,7 +79,11 @@ The program allocates memory for the array
 */
 char_array readSectionByIndex(FILE* f, Elf32_Shdr_seq arraySection, int index);
 
-
+/*
+Entries: the char_array got with the functions above
+Result: print the section
+*/
+void printSection(char_array h);
 
 /******************************************************************************/
                             /* Symbol Table */
@@ -149,11 +153,3 @@ void printRelocationTable(Elf32_Rel_seq relT, Elf32_Shdr_seq arraySection, Elf32
 /******************************************************************************/
                             /* Symbol Implentation */
 /******************************************************************************/
-
-
-
-
-
-
-
-
