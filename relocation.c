@@ -80,7 +80,7 @@ void secReorder(FILE* input,Elf32_Shdr_seq* shd_o,Elf32_Ehdr* hd_o,int* oldIds )
 	oldIds = realloc(oldIds,j*sizeof(int));
 	for(z = 0; z < j; z++){
 		i = -1;
-		while(rel_off[i+1] < shd_o->tab[z].sh_offset && i < k){
+		while(rel_off[i+1] < shd_o->tab[z].sh_offset && i+1 < k){
 
 			i++;
 		}
@@ -166,11 +166,11 @@ Elf32_Sym_seq symbReorder(FILE* input, Elf32_Shdr_seq* shd_o, Elf32_Ehdr* hd_o, 
 
     return arraySymbol;
 }
-
+/*
 void symbolImplentation(FILE* file, Elf32_Ehdr* ehdr, Elf32_Shdr_seq* arraySection, int* tabCorrespondanceSection) {
 
     //Renumérotation des sections (shndx)
-	Elf32_Sym_seq arraySymbol = symbReorder(file, arraySection, ehdr, tabCorrespondanceSection);    	  
+//	Elf32_Sym_seq arraySymbol = symbReorder(file, arraySection, ehdr, tabCorrespondanceSection);    	  
 
 
-}
+}*/
