@@ -4,6 +4,7 @@
 #include "readELF.h"
 #include "byteManipulation.h"
 
+
 /******************************************************************************/
                                 /* ELF header */
 /******************************************************************************/
@@ -14,22 +15,22 @@ Elf32_Ehdr readELFHeader(FILE *f) {
     for(int i=0;i<16;i++) {
         hd.e_ident[i]=get1Byte(f);
     }
-    //TODO : Rendre le code plus simple à lire
-    //int boutisme = hd.e_ident[EI_DATA];
-    hd.e_type = get2Bytes(f,hd.e_ident[EI_DATA]);
-    hd.e_machine = get2Bytes(f,hd.e_ident[EI_DATA]);
-    hd.e_version = get4Bytes(f,hd.e_ident[EI_DATA]);
-    hd.e_entry = get4Bytes(f,hd.e_ident[EI_DATA]); // This is the memory address of the entry point from where the process starts executing
-    hd.e_phoff = get4Bytes(f,hd.e_ident[EI_DATA]); // Points to the start of the program header table
-    hd.e_shoff = get4Bytes(f,hd.e_ident[EI_DATA]); // Points to the start of the section header table
-    hd.e_flags = get4Bytes(f,hd.e_ident[EI_DATA]);
-    hd.e_ehsize = get2Bytes(f,hd.e_ident[EI_DATA]); //Contains the size of this header, normally 64 Bytes for 64-bit and 52 Bytes for 32-bit format
-    hd.e_phentsize = get2Bytes(f,hd.e_ident[EI_DATA]); // Contains the size of a program header table entry
-    hd.e_phnum = get2Bytes(f,hd.e_ident[EI_DATA]); // Contains the number of entries in the program header table
-    hd.e_shentsize = get2Bytes(f,hd.e_ident[EI_DATA]); // Contains the size of a section header table entry
-    hd.e_shnum = get2Bytes(f,hd.e_ident[EI_DATA]); //Contains the number of entries in the section header table
-    hd.e_shstrndx = get2Bytes(f,hd.e_ident[EI_DATA]); //Contains index of the section header table entry that contains the section names
-    return hd;
+
+    char endianness = hd.e_ident[EI_DATA];
+    hd.e_type = get2Bytes(f,endianness);
+    hd.e_machine = get2Bytes(f,endianness);
+    hd.e_version = get4Bytes(f,endianness);
+    hd.e_entry = get4Bytes(f,endianness); // This is the memory address of the entry point from where the process starts executing
+    hd.e_phoff = get4Bytes(f,endianness); // Points to the start of the program header table
+    hd.e_shoff = get4Bytes(f,endianness); // Points to the start of the section header table
+    hd.e_flags = get4Bytes(f,endianness);
+    hd.e_ehsize = get2Bytes(f,endianness); //Contains the size of this header, normally 64 Bytes for 64-bit and 52 Bytes for 32-bit format
+    hd.e_phentsize = get2Bytes(f,endianness); // Contains the size of a program header table entry
+    hd.e_phnum = get2Bytes(f,endianness); // Contains the number of entries in the program header table
+    hd.e_shentsize = get2Bytes(f,endianness); // Contains the size of a section header table entry
+    hd.e_shnum = get2Bytes(f,endianness); //Contains the number of entries in the section header table
+    hd.e_shstrndx = get2Bytes(f,endianness); //Contains index of the section header table entry that contains the section names
+	return hd;
 }
 
 
@@ -112,18 +113,18 @@ Elf32_Shdr_seq readSectionHeader(FILE *f, Elf32_Ehdr hd) {
     seq.tab = malloc(sizeof(Elf32_Shdr)*seq.n);
 
     fseek(f,hd.e_shoff,SEEK_SET); //Go to the beginning of the section header
-
+    char endianness = hd.e_ident[EI_DATA];
     for(int i=0;i<seq.n;i++ ) {
-        seq.tab[i].sh_name = get4Bytes(f,hd.e_ident[EI_DATA]);
-        seq.tab[i].sh_type = get4Bytes(f,hd.e_ident[EI_DATA]);
-        seq.tab[i].sh_flags = get4Bytes(f,hd.e_ident[EI_DATA]);
-        seq.tab[i].sh_addr = get4Bytes(f,hd.e_ident[EI_DATA]);
-        seq.tab[i].sh_offset = get4Bytes(f,hd.e_ident[EI_DATA]);
-        seq.tab[i].sh_size = get4Bytes(f,hd.e_ident[EI_DATA]);
-        seq.tab[i].sh_link = get4Bytes(f,hd.e_ident[EI_DATA]);
-        seq.tab[i].sh_info = get4Bytes(f,hd.e_ident[EI_DATA]);
-        seq.tab[i].sh_addralign = get4Bytes(f,hd.e_ident[EI_DATA]);
-        seq.tab[i].sh_entsize = get4Bytes(f,hd.e_ident[EI_DATA]);
+        seq.tab[i].sh_name = get4Bytes(f,endianness);
+        seq.tab[i].sh_type = get4Bytes(f,endianness);
+        seq.tab[i].sh_flags = get4Bytes(f,endianness);
+        seq.tab[i].sh_addr = get4Bytes(f,endianness);
+        seq.tab[i].sh_offset = get4Bytes(f,endianness);
+        seq.tab[i].sh_size = get4Bytes(f,endianness);
+        seq.tab[i].sh_link = get4Bytes(f,endianness);
+        seq.tab[i].sh_info = get4Bytes(f,endianness);
+        seq.tab[i].sh_addralign = get4Bytes(f,endianness);
+        seq.tab[i].sh_entsize = get4Bytes(f,endianness);
     }
     return seq;
 }
@@ -241,11 +242,14 @@ void printSectionHeader(Elf32_Shdr_seq seqHd,Elf32_Ehdr hd,FILE *f) {
 char_array readSectionByName(FILE* f, Elf32_Shdr_seq arraySection, char * name, Elf32_Ehdr hd) {
     char_array h;
     int found=-1;
+    char *nameSection=NULL;
     /*Test the string*/
     for(int i=0;i<arraySection.n;i++) {
-        if(!strcmp(getSectionName(arraySection,i,hd,f),name)) {
+        nameSection = getSectionName(arraySection,i,hd,f);
+        if(!strcmp(nameSection,name)) {
             found = i;
         }
+        free(nameSection);
     }
     if (found==-1) { //The section is not present
         printf("ERROR: name not found in the section header!\n");
@@ -278,16 +282,55 @@ char_array readSectionByIndex(FILE* f, Elf32_Shdr_seq arraySection, int index) {
     return h;
 }
 
+void printSection(char_array h) {
+    if (h.n==0) {
+        printf("The section is empty\n");
+    }
+    for(int i=0;i<h.n;i++) {
+        if (i%16==0) { //Print the adress
+            printf("\n0x%8.8x ",i);
+        }
+
+        printf("%2.2x",h.tab[i]); //Print the value
+        if ((i+1)%4==0) {
+            printf(" ");
+        }
+        if((i+1)%16==0) { //Print a string value
+            for(int k=i-15;k<=i;k++) {
+                if (h.tab[k]>=32 && h.tab[k]<=126) {
+                    printf("%c",h.tab[k]);
+                }
+                else {
+                    printf(".");
+                }
+            }
+        }
+        else if (i==h.n-1) {  // Last line: Print a string value
+            for(int k=0;k<=15-(i%16);k++) { //Print the white space
+                if((k+((i+1)%4)%4==0))
+                    printf(" ");
+                printf("  ");
+            }
+            for(int k=i-(h.n%16)+1;k<=i;k++) {
+                if (h.tab[k]>=32 && h.tab[k]<=126) {
+                    printf("%c",h.tab[k]);
+                }
+                else {
+                    printf(".");
+                }
+            }
+        }
+    }
+    printf("\n");
+}
+
 /******************************************************************************/
                             /* Symbol Table */
 /******************************************************************************/
 
 char * getSymbolName(Elf32_Sym sym, Elf32_Shdr_seq seqSection, FILE *f) {
     char *str = malloc(100);
-    /*for(int i=0;indexNameSymbol==-1 && i<seqSection.n;i++) { //Find the index of the symbol table in the header section
-        if(seqSection.tab[i].sh_type == SHT_SYMTAB)
-            indexNameSymbol=1;
-    }*/
+    str[0]=0; //Unintialize to an empty string
     if (sym.st_name==0)
         return str;
 
@@ -319,13 +362,14 @@ Elf32_Sym_seq readSymbolTable(FILE* f, Elf32_Shdr_seq arraySection,Elf32_Ehdr hd
     seqSym.tab = malloc(nbSymbol*(sizeof(Elf32_Sym)));
 
     int iSym=0;
+    char endianness = hd.e_ident[EI_DATA];
     for(int i=0;i<nbSymbol;i++) { //For each symbol
-        seqSym.tab[iSym].st_name = get4Bytes(f,hd.e_ident[EI_DATA]);
-        seqSym.tab[iSym].st_value = get4Bytes(f,hd.e_ident[EI_DATA]);
-        seqSym.tab[iSym].st_size = get4Bytes(f,hd.e_ident[EI_DATA]);
+        seqSym.tab[iSym].st_name = get4Bytes(f,endianness);
+        seqSym.tab[iSym].st_value = get4Bytes(f,endianness);
+        seqSym.tab[iSym].st_size = get4Bytes(f,endianness);
         seqSym.tab[iSym].st_info = get1Byte(f);
         seqSym.tab[iSym].st_other = get1Byte(f);
-        seqSym.tab[iSym].st_shndx = get2Bytes(f,hd.e_ident[EI_DATA]);
+        seqSym.tab[iSym].st_shndx = get2Bytes(f,endianness);
         iSym++;
     }
     return seqSym;
@@ -334,6 +378,7 @@ Elf32_Sym_seq readSymbolTable(FILE* f, Elf32_Shdr_seq arraySection,Elf32_Ehdr hd
 void printSymbolTable(Elf32_Sym_seq seqSym, Elf32_Shdr_seq arraySection,FILE *f) {
     printf("Num:    Value  Size Type    Bind   Vis      Ndx Name\n");
     printf("  0: 00000000     0 NOTYPE  LOCAL  DEFAULT  UND \n");
+    char * nameSymbol=NULL;
     for(int iSym=1;iSym<seqSym.n;iSym++) {
         printf("%3d: ", iSym);
         printf("%8.8x  ", seqSym.tab[iSym].st_value);
@@ -386,7 +431,9 @@ void printSymbolTable(Elf32_Sym_seq seqSym, Elf32_Shdr_seq arraySection,FILE *f)
             printf("ABS ");
         else
             printf("%3d ",seqSym.tab[iSym].st_shndx);
-        printf("%s ",getSymbolName(seqSym.tab[iSym],arraySection,f));
+        nameSymbol = getSymbolName(seqSym.tab[iSym],arraySection,f);
+        printf("%s ",nameSymbol);
+        free(nameSymbol);
         printf("\n");
     }
 }
@@ -403,21 +450,21 @@ Elf32_Rel_seq readRelocationTable(FILE* f, Elf32_Shdr_seq arraySection, Elf32_Eh
             nbRelocation++;
         }
     }
-    seqRel.n=nbRelocation;
+    seqRel.n=nbRelocation; //The number of relocation section
     seqRel.tab = malloc(sizeof(Elf32_Rel_expend)*nbRelocation);
     int iTableReloc=0;
-    for (int i=0;i<arraySection.n;i++) {
+    for (int i=0;i<arraySection.n;i++) { //For each section
         if(arraySection.tab[i].sh_type == SHT_REL) { //A relocation table
-            seqRel.tab[iTableReloc].n = arraySection.tab[i].sh_size/8;
+            seqRel.tab[iTableReloc].n = arraySection.tab[i].sh_size/8; //The number of entries for this relocation section
             seqRel.tab[iTableReloc].tabRelocation = malloc(arraySection.tab[i].sh_size);
-            seqRel.tab[iTableReloc].offset = arraySection.tab[i].sh_offset;
-            seqRel.tab[iTableReloc].name = getSectionName(arraySection,i,hd,f);
+            seqRel.tab[iTableReloc].offset = arraySection.tab[i].sh_offset; //Offset of the reloc section
+            seqRel.tab[iTableReloc].name = getSectionName(arraySection,i,hd,f); //Name of the reloc section
 
             fseek(f,arraySection.tab[i].sh_offset,SEEK_SET); //Go to the section for the relocation
-
+            char endianness = hd.e_ident[EI_DATA];
             for(int k=0;k<seqRel.tab[iTableReloc].n;k++) { //For each value of the relocation table
-                seqRel.tab[iTableReloc].tabRelocation[k].r_offset = get4Bytes(f,hd.e_ident[EI_DATA]);
-                seqRel.tab[iTableReloc].tabRelocation[k].r_info = get4Bytes(f,hd.e_ident[EI_DATA]);
+                seqRel.tab[iTableReloc].tabRelocation[k].r_offset = get4Bytes(f,endianness);
+                seqRel.tab[iTableReloc].tabRelocation[k].r_info = get4Bytes(f,endianness);
             }
             iTableReloc ++;
         }
