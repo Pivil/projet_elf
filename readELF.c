@@ -4,6 +4,7 @@
 #include "readELF.h"
 #include "byteManipulation.h"
 
+
 /******************************************************************************/
                                 /* ELF header */
 /******************************************************************************/
@@ -28,7 +29,7 @@ Elf32_Ehdr readELFHeader(FILE *f) {
     hd.e_shentsize = get2Bytes(f,endianness); // Contains the size of a section header table entry
     hd.e_shnum = get2Bytes(f,endianness); //Contains the number of entries in the section header table
     hd.e_shstrndx = get2Bytes(f,endianness); //Contains index of the section header table entry that contains the section names
-    return hd;
+	return hd;
 }
 
 

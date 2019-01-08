@@ -7,16 +7,19 @@ void secReorder(FILE* input,Elf32_Shdr_seq* shd_o,Elf32_Ehdr* hd_o,int* oldIds )
 	uint32_t shoff_off= 0;
 	uint32_t old_shoff = hd_o->e_shoff;
 	int i,j,k,z;
-
+	int idShstr = -1;
 	uint32_t* rel_off = malloc(hd_o->e_shnum*sizeof(uint32_t));
 	uint32_t* rel_sumSize = malloc(hd_o->e_shnum*sizeof(uint32_t));
 	j=0;k=0;
 	shd_o->n = j;
 	shd_o->tab = malloc(hd_o->e_shnum*sizeof(Elf32_Shdr));
 	for(i = 0; i < hd_o->e_shnum; i++){
-
 		if(shd.tab[i].sh_type != SHT_RELA && shd.tab[i].sh_type != SHT_REL){
 			shd_o->tab[j] = shd.tab[i];
+			if(i == hd_o->e_shstrndx){
+				idShstr = j;
+			}
+
 			oldIds[j] = i;
 			j++;
 		}
@@ -94,7 +97,11 @@ void secReorder(FILE* input,Elf32_Shdr_seq* shd_o,Elf32_Ehdr* hd_o,int* oldIds )
 		}		
 		if(i >= 0){
 			shd_o->tab[z].sh_offset -= rel_sumSize[i];			
+
 		}
+	}
+	if(idShstr != -1){
+		hd_o->e_shstrndx = idShstr ;
 	}
 	hd_o->e_shnum = j;
 	hd_o->e_shoff -= shoff_off;
@@ -143,6 +150,14 @@ void resizeFile(FILE* file, uint32_t offset, uint32_t size){
 	}
 }
 
+void changeAddressSec(Elf32_Shdr_seq* shd_o, int id, uint32_t address){
+	if(id < shd_o->n){
+		shd_o->tab[id].sh_addr = address;
+	}
+}
+
+
+
 /******************************************************************************/
 /* Symbol Implentation */
 /******************************************************************************/
@@ -168,18 +183,6 @@ Elf32_Sym_seq symbReorder(FILE* input, Elf32_Shdr_seq* shd_o, Elf32_Ehdr* hd_o, 
 	 */
 	return arraySymbol;
 }
-<<<<<<< HEAD
-/*
-   void symbolImplentation(FILE* file, Elf32_Ehdr* ehdr, Elf32_Shdr_seq* arraySection, int* tabCorrespondanceSection) {
-
-//Renumérotation des sections (shndx)
-//	Elf32_Sym_seq arraySymbol = symbReorder(file, arraySection, ehdr, tabCorrespondanceSection);    	  
-
-
-}*/
-=======
-
-
 
 void symbolImplentation(FILE* file, Elf32_Ehdr* ehdr, Elf32_Shdr_seq* arraySection, int* tabCorrespondanceSection) {
 
@@ -190,7 +193,7 @@ void symbolImplentation(FILE* file, Elf32_Ehdr* ehdr, Elf32_Shdr_seq* arraySecti
 		for (int j = 0; j < arraySection->n; i++) {
 			if (arraySymbol.tab[i].st_shndx == arraySection->tab[j].sh_name) {
 				//printf("Mise à jour du symbole %i, ancienne value : %i, nouvelle value : %i (section %i, adresse %i)")
-				arraySymbol.tab[i].st_value += arraySection->tab[i].sh_addr // TODO : Demander pourquoi les sh_addr sont
+				arraySymbol.tab[i].st_value += arraySection->tab[i].sh_addr; // TODO : Demander pourquoi les sh_addr sont
 					//tous à 0 dans la table des sections
 			}
 		}
@@ -198,4 +201,3 @@ void symbolImplentation(FILE* file, Elf32_Ehdr* ehdr, Elf32_Shdr_seq* arraySecti
 
 
 }
->>>>>>> 004d9dcde81b7df30daa99fe4499cc40df043be3
