@@ -14,6 +14,8 @@ Elf32_Ehdr readELFHeader(FILE *f) {
     for(int i=0;i<16;i++) {
         hd.e_ident[i]=get1Byte(f);
     }
+    //TODO : Rendre le code plus simple à lire
+    //int boutisme = hd.e_ident[EI_DATA];
     hd.e_type = get2Bytes(f,hd.e_ident[EI_DATA]);
     hd.e_machine = get2Bytes(f,hd.e_ident[EI_DATA]);
     hd.e_version = get4Bytes(f,hd.e_ident[EI_DATA]);
