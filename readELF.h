@@ -58,6 +58,7 @@ char * getSectionName(Elf32_Shdr_seq sh,int index, Elf32_Ehdr hd,FILE *f);
 typedef struct char_array {
     unsigned char * tab;
     int n;
+    int offset;
 } char_array;
 
 /*
@@ -116,7 +117,12 @@ The program allocates memory for the string
 */
 char * getSymbolName(Elf32_Sym sym, Elf32_Shdr_seq seqSection, FILE *f);
 
-#endif
+/*
+Entries: the symbol, the section header, the file header and the file
+Result: the value of the symbol
+*/
+int getSymbolValue(Elf32_Sym sym, Elf32_Shdr_seq seqSection,Elf32_Ehdr hd, FILE *f);
+
 
 /******************************************************************************/
                             /* Relocation Table */
@@ -150,6 +156,7 @@ Result: print the relocation table
 */
 void printRelocationTable(Elf32_Rel_seq relT, Elf32_Shdr_seq arraySection, Elf32_Sym_seq symSeq,Elf32_Ehdr hd,FILE *f);
 
-/******************************************************************************/
-                            /* Symbol Implentation */
-/******************************************************************************/
+
+void doReloc(Elf32_Rel_seq relSeq, Elf32_Shdr_seq arraySection, Elf32_Sym_seq symSeq, Elf32_Ehdr hd, FILE * fInput, FILE * fOutput);
+
+#endif

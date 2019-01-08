@@ -256,6 +256,7 @@ char_array readSectionByName(FILE* f, Elf32_Shdr_seq arraySection, char * name, 
     else {
         h.n = arraySection.tab[found].sh_size;
         h.tab=malloc(h.n); //Alloc the array
+        h.offset = arraySection.tab[found].sh_addr; //The beginning of the section
 
         fseek(f,arraySection.tab[found].sh_offset,SEEK_SET); //Go to the beginning of the section
         for(unsigned int i=0;i<arraySection.tab[found].sh_size;i++) { //Read the section
@@ -272,7 +273,7 @@ char_array readSectionByIndex(FILE* f, Elf32_Shdr_seq arraySection, int index) {
     }
     h.n = arraySection.tab[index].sh_size;
     h.tab=malloc(h.n); //Alloc the array
-
+    h.offset = arraySection.tab[index].sh_addr; //The beginning of the section
     fseek(f,arraySection.tab[index].sh_offset,SEEK_SET); //Go to the beginning of the section
     for(unsigned int i=0;i<arraySection.tab[index].sh_size;i++) { //Read the section
         h.tab[i] = get1Byte(f);
@@ -286,7 +287,7 @@ void printSection(char_array h) {
     }
     for(int i=0;i<h.n;i++) {
         if (i%16==0) { //Print the adress
-            printf("\n0x%8.8x ",i);
+            printf("\n0x%8.8x ",i+h.offset);
         }
 
         printf("%2.2x",h.tab[i]); //Print the value
@@ -335,8 +336,8 @@ char * getSymbolName(Elf32_Sym sym, Elf32_Shdr_seq seqSection, FILE *f) {
     //TODO On récupère directement la valeur (il vaut mieux parcourir)
     fseek(f,sym.st_name + seqSection.tab[seqSection.n-1].sh_offset,SEEK_SET);//Go the beginning of the string
     int i=0; unsigned char c=1;
-    while(c!='\0') {
-        c=get1Byte(f);
+    while(c!='\0') { //While we're not at the end of the string
+        c=get1Byte(f); //Read the file
         str[i]=c;
         i++;
     }
@@ -344,8 +345,15 @@ char * getSymbolName(Elf32_Sym sym, Elf32_Shdr_seq seqSection, FILE *f) {
     return str;
 }
 
+int getSymbolValue(Elf32_Sym sym, Elf32_Shdr_seq seqSection,Elf32_Ehdr hd, FILE *f) {
+    int sectionAdr = seqSection.tab[sym.st_shndx].sh_offset; //Section address
+    int symbolAdr = sym.st_value + sectionAdr; //The address of the value of the symbol
+    fseek(f,symbolAdr,SEEK_SET);//Go the beginning of the symbol value
+    char endianness = hd.e_ident[EI_DATA];
+    return get4Bytes(f,endianness); //Get the value in the file
+}
+
 Elf32_Sym_seq readSymbolTable(FILE* f, Elf32_Shdr_seq arraySection,Elf32_Ehdr hd) {
-    //Size of a symbol 16bytes
     int index=-1;
     for(int i=0;index==-1 && i<arraySection.n;i++) { //Find the index of the symbol table in the header section
         if(arraySection.tab[i].sh_type==SHT_SYMTAB)
