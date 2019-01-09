@@ -1,0 +1,55 @@
+#!/bin/bash
+
+function compare(){
+	grep "$3" $1 > g_1.tmp
+		grep "$3" $2 > g_2.tmp
+		DIF=`diff g_?.tmp`
+		if [ ! -z "$DIF" ] 
+		then
+			echo "Difference pour $3"
+			echo $DIF
+			echo
+		fi
+}
+
+
+if [ $# -ne 1 ]
+then
+echo "Usage : $0 <object> "
+exit 1
+
+fi
+
+
+../relocTest $1 res.tmp 
+arm-eabi-readelf -h $1 > head_1.tmp 
+arm-eabi-readelf -h res.tmp > head_2.tmp
+arm-eabi-readelf -S $1 > sect_1.tmp ; 
+arm-eabi-readelf -S res.tmp > sect_2.tmp ; 
+
+ONSH=`compare head_1.tmp head_2.tmp "Number of section headers:" | sed 's/Number of section headers://g' | sed 's/Difference pour//g' | sed -r 's|[0-9]*c[0-9]* <||g' | sed 's|--- >|-|g'  `
+
+echo `expr $ONSH` sections ont ete supprimees
+if [[ ( `expr $ONSH` == `grep -c REL sect_1.tmp` ) && ( `grep -c REL sect_2.tmp` == 0 ) ]]
+then
+	echo TEST SUPPR BONNE SECTION : OK
+else
+	echo TEST SUPPR BONNE SECTION : ko
+fi
+echo
+
+IDSHSTR=`compare head_1.tmp head_2.tmp "Section header string table index:" | sed 's|Section header string table index:||g' | sed 's|Difference pour||g' | sed -r 's|[0-9]*c[0-9]* <||g' | sed -r 's|[0-9]* --- >||'`
+
+GREID="$IDSHSTR]"
+
+GREA=`grep -e $GREID sect_2.tmp`
+GREB=`grep .shstrtab sect_2.tmp`
+
+if [ -z `diff <(echo "$GREA") <(echo "$GREB")` ]
+then
+	echo TEST SECTION HEADER STRING TABLE : OK
+else
+	echo TEST SECTION HEADER STRING TABLE : ko
+fi
+echo
+rm *.tmp
