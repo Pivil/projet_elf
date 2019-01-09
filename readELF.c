@@ -247,31 +247,36 @@ void printSectionHeader(Elf32_Shdr_seq seqHd,Elf32_Ehdr hd,FILE *f) {
 /******************************************************************************/
                             /* Section */
 /******************************************************************************/
+int getSectionIndex(char * name, Elf32_Shdr_seq arraySection, Elf32_Ehdr hd, FILE *f) {
+    int index = -1;
+    char *nameSection=NULL;
 
+    for(int i=0;i<arraySection.n && index == -1;i++) { //For each section in the section header
+        nameSection = getSectionName(arraySection,i,hd,f); //Get the name of the section
+        if(!strcmp(nameSection,name)) { //Compare the name of the sections
+            index = i; //Found the index of the section
+        }
+        free(nameSection); //Don't forget to free the name
+    }
+    return index;
+}
 
 char_array readSectionByName(FILE* f, Elf32_Shdr_seq arraySection, char * name, Elf32_Ehdr hd) {
     char_array h;
-    int found=-1;
-    char *nameSection=NULL;
-    /*Test the string*/
-    for(int i=0;i<arraySection.n;i++) {
-        nameSection = getSectionName(arraySection,i,hd,f);
-        if(!strcmp(nameSection,name)) {
-            found = i;
-        }
-        free(nameSection);
-    }
-    if (found==-1) { //The section is not present
+    int index=-1;
+    index = getSectionIndex(name, arraySection, hd, f); //Get the index of the section selected
+
+    if (index==-1) { //The section is not present
         printf("ERROR: name not found in the section header!\n");
         exit(1);
     }
     else {
-        h.n = arraySection.tab[found].sh_size;
+        h.n = arraySection.tab[index].sh_size;
         h.tab=malloc(h.n); //Alloc the array
-        h.offset = arraySection.tab[found].sh_addr; //The beginning of the section
+        h.offset = arraySection.tab[index].sh_addr; //The beginning of the section
 
-        fseek(f,arraySection.tab[found].sh_offset,SEEK_SET); //Go to the beginning of the section
-        for(unsigned int i=0;i<arraySection.tab[found].sh_size;i++) { //Read the section
+        fseek(f,arraySection.tab[index].sh_offset,SEEK_SET); //Go to the beginning of the section
+        for(unsigned int i=0;i<arraySection.tab[index].sh_size;i++) { //Read the section
             h.tab[i] = get1Byte(f);
         }
         return h;

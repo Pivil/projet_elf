@@ -62,10 +62,21 @@ typedef struct char_array {
 } char_array;
 
 /*
+Entries:
+name : the name of the section to read
+arraySection : contains all the section of the file
+hd: the ELF header
+f : the object file to read
+Result: the index of the section or -1 if not found
+*/
+int getSectionIndex(char * name, Elf32_Shdr_seq arraySection, Elf32_Ehdr hd, FILE *f);
+
+/*
 Entries: f : the object file to read
 arraySection : contains all the section of the file
 sizeSection : the number sections
 name : the name of the section to read
+hd: the ELF header
 Result: a char_array which contains the values of the section
 The program allocates memory for the array
 */
