@@ -123,7 +123,6 @@ void writeSHDRT(Elf32_Shdr* shdt,int shdtSize, FILE* output, uint32_t offset){
 
 }
 
-
 void copySection(FILE* input, FILE* output, uint32_t in_offset,uint32_t out_offset, uint32_t size){
 	resizeFile(output,out_offset,size);
 	fseek(output,out_offset,SEEK_SET);
@@ -164,64 +163,64 @@ void changeAddressSec(Elf32_Shdr_seq* shd_o, int id, uint32_t address){
 /******************************************************************************/
 
 
-int getAdresse(char* adresse) {
-	if (adresse == NULL || adresse[0] != '0' || adresse[1] != 'x') {
+// *** ETAPE 7 ***
+int getAddress(char* address) { //Get the address of a commande like 0x200 (get just '200')
+	if (strlen(address) < 3 || strlen(address) > 10) //Return -1 if the lenght is too short / too long
+		return -1;
+	if (address == NULL || address[0] != '0' || address[1] != 'x') {
 		printf("Erreur, adresse incorrecte\n");
 		return 0;
 	} 
 	else {
-		adresse = &adresse[2];
-		return(atoi(adresse));
+		address = &address[2];
+		return(atoi(address));
 	}
 }
 
-// *** ETAPE 7 ***
 void writeSYMB (Elf32_Shdr_seq tabShdr, Elf32_Sym_seq* symboles, FILE* result){
 	Elf32_Off offset;
 	for (int i = 0; i < tabShdr.n; i++) {
 		if (tabShdr.tab[i].sh_type == SHT_SYMTAB) {
-			offset = tabShdr.tab[i].sh_offset;
+			offset = tabShdr.tab[i].sh_offset; // Search the symbol section offset
 		}
 	}
-	printf("offset = %i\n", offset);
-	for (int j = 0; j < symboles->n; j++)
-		printf("%x\n", symboles->tab[j].st_value);
 
-	resizeFile(result, offset, symboles->n*sizeof(Elf32_Sym));
 	fseek(result, offset, SEEK_SET);
-	fwrite(symboles->tab, sizeof(Elf32_Sym), symboles->n, result);
+	fwrite(symboles->tab, sizeof(Elf32_Sym), symboles->n, result); //Override old information in the result file
+}
 
-
-
-void symbolImplentation(FILE* file, FILE* result, Elf32_Ehdr* ehdr, Elf32_Shdr_seq* arraySection, int* oldIds, int addData, int addText) {
-	Elf32_Sym_seq arraySymbol = readSymbolTable(file, *arraySection, *ehdr);
+void symbolImplantation(FILE* result, Elf32_Ehdr* ehdr, Elf32_Shdr_seq* arraySection, int* oldIds, int addData, int addText) {
+	Elf32_Sym_seq arraySymbol = readSymbolTable(result, *arraySection, *ehdr);
 	Elf32_Addr symbValue;
 	Elf32_Half symbShndx;
 	char* sectionName;
-    for (int i = 0; i < arraySymbol.n; i++) { // Pour chaque numéro de section dans la table de symbole
+    for (int i = 0; i < arraySymbol.n; i++) { // For each symbol
     	symbValue = arraySymbol.tab[i].st_value;
     	symbShndx = arraySymbol.tab[i].st_shndx;
-    	for (int j = 0; j < arraySection->n; j++) { // Pour chaque section
+
+    	for (int j = 0; j < arraySection->n; j++) { // Update the section id
     		if (symbShndx == oldIds[j]) {
     			symbShndx = j;
-				sectionName = getSectionName(*arraySection, j, *ehdr, file);
-				printf("%s\n", sectionName);
+				sectionName = getSectionName(*arraySection, j, *ehdr, result);
+
     		}
-			if (strcmp(sectionName, ".text") == 0) {
-				arraySymbol.tab[i].st_value += addText; // Mise à jour du champs value pour les symboles décrits dans la section .text
+    		if (symbShndx == j) {
+				if (strcmp(sectionName, ".text") == 0) {
+					arraySymbol.tab[i].st_value += addText; // Update the symbol value field (st_value) by adding the .text memory address
+				}
+
+				if (strcmp(sectionName, ".data") == 0) {
+					arraySymbol.tab[i].st_value += addData; //Update the symbol value field (st_value) by adding the .data memory address
+
+				} 		
 			}
-
-			if (strcmp(sectionName, ".data") == 0) {
-				arraySymbol.tab[i].st_value += addData; // Mise à jour du champs value pour les symboles décrits dans la section .data
-
-				
-			} 		
 		}
 	}	
 
 
-    free(sectionName);    
-    writeSYMB(*arraySection, &arraySymbol, result);
+    free(sectionName);  
 
+
+    writeSYMB(*arraySection, &arraySymbol, result);
 }
 

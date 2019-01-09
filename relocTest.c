@@ -29,6 +29,8 @@ int main(int argc, char** argv){
 	}	
 	
 
+	fclose(result);
+	result = fopen(argv[2], "r+");
 
 	// Partie 7 : table des symboles
 	int addData = 0;
@@ -36,23 +38,20 @@ int main(int argc, char** argv){
 
 	if (argc == 7) {
 		if (strcmp(argv[3], "-data") == 0) 
-			addData = getAdresse(argv[4]);
-
+			addData = getAddress(argv[4]);
 		else if (strcmp(argv[5], "-data") == 0)
-			addData = getAdresse(argv[6]);
+			addData = getAddress(argv[6]);
 		else {
 			printf("Veuillez renseigner l'adresse de la section .data (commande -data)\n");
 			return 0;
 		}
 
-
-
 		if (strcmp(argv[3], "-text") == 0)
-			addText = getAdresse(argv[4]);
+			addText = getAddress(argv[4]);
 
 		else if (strcmp(argv[5], "-text") == 0)
 
-			addText = getAdresse(argv[6]);
+			addText = getAddress(argv[6]);
 		else{
 			printf("Veuillez renseigner l'adresse de la section .text (commande -text)\n");
 			return 0;
@@ -60,9 +59,11 @@ int main(int argc, char** argv){
 
 	
 		//TODO : pourquoi ça fonctionne pas avec shd_o ? -> demander à Samuel
-		//symbolImplentation(file, result, &hd_o, &old_shd, oldIds, addData, addText);
-		symbolImplentation(file, result, &hd_o, &shd_o, oldIds, addData, addText);
-
+		//symbolImplantation(result, result, &hd_o, &old_shd, oldIds, addData, addText);
+		if (addData != -1 && addText != -1)
+			symbolImplantation(result, &hd_o, &shd_o, oldIds, addData, addText);
+		else
+			printf("Erreur, veuillez entrer une adresse de taille valide\n");
 	}
 
 	
