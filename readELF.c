@@ -511,7 +511,7 @@ void printRelocationTable(Elf32_Rel_seq relT, Elf32_Shdr_seq arraySection, Elf32
                 printf("%-17.17s ","R_ARM_ABS32");
                 break;
                 case R_ARM_ABS16:
-                printf("%-17.17s","R_ARM_ABS16");
+                printf("%-17.17s ","R_ARM_ABS16");
                 break;
                 case R_ARM_ABS8:
                 printf("%-17.17s ","R_ARM_ABS8");
