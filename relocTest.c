@@ -36,6 +36,7 @@ int main(int argc, char** argv){
 	int addData = 0;
 	int addText = 0;
 
+	//Get the parameters of the function
 	if (argc == 7) {
 		if (strcmp(argv[3], "-data") == 0) 
 			addData = getAddress(argv[4]);
@@ -57,9 +58,7 @@ int main(int argc, char** argv){
 			return 0;
 		}
 
-	
-		//TODO : pourquoi ça fonctionne pas avec shd_o ? -> demander à Samuel
-		//symbolImplantation(result, result, &hd_o, &old_shd, oldIds, addData, addText);
+		//Symbol implantation : get the absolue addresse instead of relative addresse
 		if (addData != -1 && addText != -1)
 			symbolImplantation(result, &hd_o, &shd_o, oldIds, addData, addText);
 		else
