@@ -43,7 +43,17 @@ void printELFHeader(Elf32_Ehdr hd) {
     printf("Class: ELF%s\n", hd.e_ident[EI_CLASS]==1 ? "32" : "64");
     printf("Data: %s\n", hd.e_ident[EI_DATA]==1 ? "little endian" : "big endian");
     printf("Version: %d\n", hd.e_ident[EI_VERSION]);
-    printf("OS/ABI: %s\n", hd.e_ident[EI_OSABI]==0x61 ? "ARM":"Other");
+    printf("OS/ABI: ");
+    switch (hd.e_ident[EI_OSABI]) {
+        case 0x61:
+            printf("ARM\n");
+            break;
+        case 0x0:
+            printf("UNIX - System V\n");
+            break;
+        default:
+            printf("Other\n");
+    }
     printf("Abi version: %d\n", hd.e_ident[EI_PAD]);
     printf("Type: ");
     switch (hd.e_type) {
@@ -437,6 +447,8 @@ void printSymbolTable(Elf32_Sym_seq seqSym, Elf32_Shdr_seq arraySection,FILE *f)
 
         if(seqSym.tab[iSym].st_shndx==SHN_ABS)
             printf("ABS ");
+        else if(seqSym.tab[iSym].st_shndx==SHN_UNDEF)
+            printf("UND ");
         else
             printf("%3d ",seqSym.tab[iSym].st_shndx);
         nameSymbol = getSymbolName(seqSym.tab[iSym],arraySection,f);
@@ -488,10 +500,10 @@ void printRelocationTable(Elf32_Rel_seq relT, Elf32_Shdr_seq arraySection, Elf32
         printf(" Offset     Info    Type            Sym.Value  Sym. Name\n");
 
         for(int k=0;k<relT.tab[i].n;k++) {// For each value of the table
-            printf("%8.8x  ",relT.tab[i].tabRelocation[k].r_offset);
-            printf("%8.8x ",relT.tab[i].tabRelocation[k].r_info);
+            printf("%8.8x  ",relT.tab[i].tabRelocation[k].r_offset); //Print offset
+            printf("%8.8x ",relT.tab[i].tabRelocation[k].r_info); //Print info
 
-            switch (ELF32_R_TYPE(relT.tab[i].tabRelocation[k].r_info)) {
+            switch (ELF32_R_TYPE(relT.tab[i].tabRelocation[k].r_info)) { //Print the type of relocation
                 case R_ARM_NONE:
                 printf("%-17.17s ","R_ARM_NONE");
                 break;
@@ -517,9 +529,10 @@ void printRelocationTable(Elf32_Rel_seq relT, Elf32_Shdr_seq arraySection, Elf32
                 printf("%-17.17s ","UNKNWON");
                 break;
             }
-            unsigned int numSym = ELF32_R_SYM(relT.tab[i].tabRelocation[k].r_info);
-            printf("%8.8x   ",symSeq.tab[numSym].st_value); //The symbol Value
-            if((ELF32_ST_TYPE(symSeq.tab[numSym].st_info)==STT_NOTYPE)) {
+            unsigned int numSym = ELF32_R_SYM(relT.tab[i].tabRelocation[k].r_info); //Get the concerned index of the symbol table
+            Elf32_Sym concernedSym = symSeq.tab[numSym]; //The concerned relocation symbol
+            printf("%8.8x   ",concernedSym.st_value); //The symbol Value
+            if((ELF32_ST_TYPE(concernedSym.st_info)==STT_NOTYPE || ELF32_ST_TYPE(concernedSym.st_info)==STT_FUNC)) {
                 printf("%s",getSymbolName(symSeq.tab[numSym],arraySection,f));//The symbol concerned name
             }
             else {
