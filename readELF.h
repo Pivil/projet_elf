@@ -156,7 +156,4 @@ Result: print the relocation table
 */
 void printRelocationTable(Elf32_Rel_seq relT, Elf32_Shdr_seq arraySection, Elf32_Sym_seq symSeq,Elf32_Ehdr hd,FILE *f);
 
-
-void doReloc(Elf32_Rel_seq relSeq, Elf32_Shdr_seq arraySection, Elf32_Sym_seq symSeq, Elf32_Ehdr hd, FILE * fInput, FILE * fOutput);
-
 #endif
