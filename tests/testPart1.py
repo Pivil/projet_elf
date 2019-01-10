@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import os
 
+#Some colors 
 Bleu="\033[1;36m"
 Red="\033[0;31m "
 Green="\033[0;32m"
@@ -8,16 +9,13 @@ White="\033[1;37m"
 
 
 
-#1: The path to the progElf
-#2: The path to the examples
 fileOption = open("optionPart1.txt","r")
 content = fileOption.read()
-option = content.split()
-pathProg = option[0]
-pathExamples = option[1]
-fileOption.close()
-
-
+option = content.split('\n')
+print(option[0])
+pathProg = str.strip(option[0].split(':')[1]) #1: The path to the printELF
+pathExamples = str.strip(option[1].split(':')[1]) #2: The path to the examples
+verbose = str.strip(option[2].split(':')[1]) #3: details for errors
 
 for f in os.listdir(pathExamples): #For all the files in the directory
     pathFileTest = pathExamples+f
@@ -74,7 +72,8 @@ for f in os.listdir(pathExamples): #For all the files in the directory
             print("Elf Header: " + Green+" OK"+White)
         else:
             print("Elf Header: " + Red+" Erreur"+White)
-            print(error)
+            if(verbose=="true"):
+                print(error)
 
         fileCorrection.close()
         fileToTest.close()
@@ -104,7 +103,8 @@ for f in os.listdir(pathExamples): #For all the files in the directory
             print("Section Table: " + Green+" OK"+White)
         else:
             print("Section Table: " + Red+" Erreur"+White)
-            print(error)
+            if(verbose=="true"):
+                print(error)
 
         fileCorrection.close()
         fileToTest.close()
@@ -145,7 +145,8 @@ for f in os.listdir(pathExamples): #For all the files in the directory
                 print("Section content by Index: " + Green+" OK"+White)
             else:
                 print("Section content by Index: " + Red+" Erreur"+White)
-                print(error)
+                if(verbose=="true"):
+                    print(error)
 
             #Use the name
             isCorrect = 1
@@ -183,7 +184,8 @@ for f in os.listdir(pathExamples): #For all the files in the directory
                 print("Section content by Name: " + Green+" OK"+White)
             else:
                 print("Section content by Name: " + Red+" Erreur"+White)
-                print(error)
+                if(verbose=="true"):
+                    print(error)
 
 ################################################################################
                                     #Test step 4#
@@ -208,7 +210,8 @@ for f in os.listdir(pathExamples): #For all the files in the directory
             print("Symbol table: "+ Green+" OK"+White)
         else:
             print("Symbol table: " + Red+" Erreur"+White)
-            print(error)
+            if(verbose=="true"):
+                print(error)
 
         fileCorrection.close()
         fileToTest.close()
@@ -236,7 +239,8 @@ for f in os.listdir(pathExamples): #For all the files in the directory
             print("Relocation table: " + Green+" OK"+White)
         else:
             print("Relocation table: " + Red+" Erreur"+White)
-            print(error)
+            if(verbose=="true"):
+                print(error)
 
         fileCorrection.close()
         fileToTest.close()

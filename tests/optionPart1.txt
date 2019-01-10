@@ -1,2 +1,3 @@
-../printELF
-./
+Chemin du printELF : ../printELF
+Chemin des tests : ./
+Détail des erreurs (true ou false) : true 
