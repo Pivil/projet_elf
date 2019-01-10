@@ -1,7 +1,7 @@
 CC=clang -std=c99 -Wall -Wextra -Wfatal-errors -fdiagnostics-color=auto
+.PHONY: clean
 
-
-exec = printELF
+exec = printELF relocTest
 all:$(exec)
 
 
@@ -29,59 +29,5 @@ relocTest.o: relocTest.c relocation.h
 relocation.o: relocation.c relocation.h readELF.h
 	$(CC) -g -c $<
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# #The programs#
-# printELFHeader : header.o
-# 	$(CC) -o printArraySection arraySection.o
-#
-# printSectionHeader : sectionHeader.o header.o
-# 	$(CC) -o printArraySection arraySection.o header.o
-#
-# printSection : section.o arraySection.o
-# 	$(CC) -o printSection section.o arraySection.o
-#
-#
-#
-#
-# #The object files#
-# ELFheader.o : ELFheader.c ELFheader.h elf.h
-# 	$(CC) -c header.c
-#
-# arraySection.o : arraySection.c arraySection.h elf.h
-# 	$(CC) -c arraySection.c
-#
-# section.o : section.c section.h elf.h
-# 	$(CC) -c section.c
-#
-#
-#
-#
-# byteManipulation.o : byteManipulation.c byteManipulation.c
-# 	$(CC) -c byteManipulation.c
-#
-#
-#
-# #The obect files for programs#
-# printELFHeader.o : printELFHeader.c section.h arraySection.h elf.h
-# 	$(CC) -c ELFheader.c
-#
-# printSectionHeader.o : printArraySection.c section.h arraySection.h elf.h
-# 	$(CC) -c sectionHeader.c
-#
-#
-# printSection.o : printSection.c section.h arraySection.h elf.h
-# 	$(CC) -c printSection.c
+clean:
+	rm -f *.o relocTest printELF
