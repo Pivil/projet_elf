@@ -189,7 +189,7 @@ void writeSYMB (Elf32_Shdr_seq tabShdr, Elf32_Sym_seq* symboles, FILE* result){
 	fwrite(symboles->tab, sizeof(Elf32_Sym), symboles->n, result); //Override old information in the result file
 }
 
-void symbolImplantation(FILE* result, Elf32_Ehdr* ehdr, Elf32_Shdr_seq* arraySection, int* oldIds, int addData, int addText) {
+void updateSymbols(FILE* result, Elf32_Ehdr* ehdr, Elf32_Shdr_seq* arraySection, int* oldIds, int addData, int addText) {
 	Elf32_Sym_seq arraySymbol = readSymbolTable(result, *arraySection, *ehdr);
 	Elf32_Addr symbValue;
 	Elf32_Half symbShndx;
