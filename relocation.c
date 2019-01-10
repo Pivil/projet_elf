@@ -5,8 +5,8 @@
 void secReorder(FILE* input,Elf32_Shdr_seq* shd_o,Elf32_Ehdr* hd_o,int* oldIds ){
 	*hd_o = readELFHeader(input);
 	Elf32_Shdr_seq shd = readSectionHeader(input,*hd_o);
-	uint32_t shoff_off= 0;
-	uint32_t old_shoff = hd_o->e_shoff;
+	uint32_t shoff_off= 0; // offset of the offset
+	uint32_t old_shoff = hd_o->e_shoff; //offset of old header
 	int i,j,k,z;
 	int idShstr = -1;
 	uint32_t* rel_off = malloc(hd_o->e_shnum*sizeof(uint32_t));
@@ -186,6 +186,7 @@ void writeSYMB (Elf32_Shdr_seq tabShdr, Elf32_Sym_seq* symboles, FILE* result){
 	}
 
 	fseek(result, offset, SEEK_SET);
+	printf("Ecriture de la table de symbole dans le fichier de sortie\n");
 	fwrite(symboles->tab, sizeof(Elf32_Sym), symboles->n, result); //Override old information in the result file
 }
 
@@ -201,15 +202,17 @@ void updateSymbols(FILE* result, Elf32_Ehdr* ehdr, Elf32_Shdr_seq* arraySection,
     	for (int j = 0; j < arraySection->n; j++) { // Update the section id
     		if (symbShndx == oldIds[j]) {
     			symbShndx = j;
-				sectionName = getSectionName(*arraySection, j, *ehdr, result);
+				sectionName = getSectionName(*arraySection, j, *ehdr, result); // Get the name of the section, to check if the section is a .text or a .data section
 
     		}
     		if (symbShndx == j) {
 				if (strcmp(sectionName, ".text") == 0) {
+					printf("Modification du symbole numéro %i (section .text)\n", i);
 					arraySymbol.tab[i].st_value += addText; // Update the symbol value field (st_value) by adding the .text memory address
 				}
 
 				if (strcmp(sectionName, ".data") == 0) {
+					printf("Modification du symbole numéro %i (section .data)\n", i);
 					arraySymbol.tab[i].st_value += addData; //Update the symbol value field (st_value) by adding the .data memory address
 
 				} 		
