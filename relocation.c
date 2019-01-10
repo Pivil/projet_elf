@@ -5,7 +5,7 @@
 void secReorder(FILE* input,Elf32_Shdr_seq* shd_o,Elf32_Ehdr* hd_o,int* oldIds ){
 	*hd_o = readELFHeader(input);
 	Elf32_Shdr_seq shd = readSectionHeader(input,*hd_o);
-	uint32_t shoff_off= 0;
+	uint32_t shoff_off= 0; //Decalage pour e_shoff
 	uint32_t old_shoff = hd_o->e_shoff;
 	int i,j,k,z;
 	int idShstr = -1;
@@ -14,11 +14,11 @@ void secReorder(FILE* input,Elf32_Shdr_seq* shd_o,Elf32_Ehdr* hd_o,int* oldIds )
 	j=0;k=0;
 	shd_o->n = j;
 	shd_o->tab = malloc(hd_o->e_shnum*sizeof(Elf32_Shdr));
-	for(i = 0; i < hd_o->e_shnum; i++){
-		if(shd.tab[i].sh_type != SHT_RELA && shd.tab[i].sh_type != SHT_REL){
-			shd_o->tab[j] = shd.tab[i];
+	for(i = 0; i < hd_o->e_shnum; i++){//For each section
+		if(shd.tab[i].sh_type != SHT_RELA && shd.tab[i].sh_type != SHT_REL){//For each section non-REL
+			shd_o->tab[j] = shd.tab[i]; //Copy
 			if(i == hd_o->e_shstrndx){
-				idShstr = j;
+				idShstr = j;	
 			}
 
 			oldIds[j] = i;
@@ -27,31 +27,34 @@ void secReorder(FILE* input,Elf32_Shdr_seq* shd_o,Elf32_Ehdr* hd_o,int* oldIds )
 		else{
 
 
-			if(rel_off && rel_sumSize){
+			if(rel_off && rel_sumSize){//For each section REL
 
 				if(k == 0){
+					//Saving informations
 					rel_off[k] = shd.tab[i].sh_offset;
 					rel_sumSize[k] = shd.tab[i].sh_size;
 				}
 				else if(shd.tab[i].sh_offset >= rel_off[k-1]){
 					if(shd.tab[i].sh_size > 0){
+						//Saving informations
 						rel_off[k] = shd.tab[i].sh_offset;
 						rel_sumSize[k] = rel_sumSize[k-1]+shd.tab[i].sh_size;
 
 					}
 				}
 				else{
+					//Placement & Saving informations
 					z=k-1;
 					while(rel_off[z] > shd.tab[i].sh_offset){
 						z--;
 					}
 					uint32_t tmp, tmpp;
 					uint32_t s_tmp, s_tmpp;
-
 					tmp = rel_off[++z];
 					rel_off[z] = shd.tab[i].sh_offset;
+
 					s_tmp = rel_sumSize[z];
-					rel_sumSize[z] = rel_sumSize[z] + shd.tab[i].sh_size;
+					rel_sumSize[z] += shd.tab[i].sh_size;
 
 					for(z=z+1; z < k; z++){
 						tmpp = rel_off[z];
@@ -88,19 +91,21 @@ void secReorder(FILE* input,Elf32_Shdr_seq* shd_o,Elf32_Ehdr* hd_o,int* oldIds )
 
 			i++;
 		}
-
+		//Update of sh_link
 		if(shd_o->tab[z].sh_link != 0){
 			for(int w = 0; w < j; w++){
 				if((unsigned int)oldIds[w] == shd_o->tab[z].sh_link){
 					shd_o->tab[z].sh_link = w;
 				}
 			}
-		}		
+		}	
+		//Update of sh_offset	
 		if(i >= 0){
 			shd_o->tab[z].sh_offset -= rel_sumSize[i];			
 
 		}
 	}
+	
 	if(idShstr != -1){
 		hd_o->e_shstrndx = idShstr ;
 	}
@@ -149,13 +154,6 @@ void resizeFile(FILE* file, uint32_t offset, uint32_t size){
 		}
 	}
 }
-
-void changeAddressSec(Elf32_Shdr_seq* shd_o, int id, uint32_t address){
-	if(id < shd_o->n){
-		shd_o->tab[id].sh_addr = address;
-	}
-}
-
 
 
 /******************************************************************************/

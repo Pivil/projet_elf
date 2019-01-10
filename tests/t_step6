@@ -52,4 +52,22 @@ else
 	echo TEST SECTION HEADER STRING TABLE : ko
 fi
 echo
-rm *.tmp
+
+I=0;
+SUMSIZE=0
+FMAX=12
+GREREL=`grep REL sect_1.tmp | tr \  : | sed -r 's|:[:]*|:|g'`
+echo $GREREL
+
+while [ $I -lt `grep -c REL sect_1.tmp` ] ; do
+	SIZE=`cut -d: -f8 <(echo "$GREREL")`
+	#SUMSIZE=`expr $SUMSIZE + $SIZE`
+	OFFSET=`cut -d: -f7 <(echo"$GREREL")`
+
+
+
+
+	I=`expr $I + 1`		
+done
+
+#rm *.tmp
