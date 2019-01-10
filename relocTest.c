@@ -60,7 +60,7 @@ int main(int argc, char** argv){
 
 		//Symbol implantation : get the absolue addresse instead of relative addresse
 		if (addData != -1 && addText != -1)
-			symbolImplantation(result, &hd_o, &shd_o, oldIds, addData, addText);
+			updateSymbols(result, &hd_o, &shd_o, oldIds, addData, addText);
 		else
 			printf("Erreur, veuillez entrer une adresse de taille valide\n");
 	}
